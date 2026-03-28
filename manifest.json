@@ -1,7 +1,7 @@
 {
   "short_name": "PocketFarm",
   "name": "Pocket Farm V2",
-  "icons": [ 20260328_141716.png 
+  "icons": [
     {
       "src": "20260328_141716.png",
       "sizes": "192x192",
@@ -9,7 +9,7 @@
       "purpose": "any maskable"
     },
     {
-      "src": "icon.png",
+      "src": "20260328_141716.png",
       "sizes": "512x512",
       "type": "image/png"
     }
