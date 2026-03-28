@@ -1,0 +1,15 @@
+{
+  "name": "Pocket Farm V2",
+  "short_name": "PocketFarm",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "https://pocket-farmv2.vercel.app/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
