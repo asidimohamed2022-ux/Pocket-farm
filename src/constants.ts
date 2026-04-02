@@ -1,4 +1,4 @@
-import { CropData, CropType, AnimalData, AnimalType, AnimalProductData, AnimalProductType } from './types';
+import { CropData, CropType, AnimalData, AnimalType, AnimalProductData, AnimalProductType, Rarity, InfusionType } from './types';
 
 export const CROPS: Record<CropType, CropData> = {
   // NR (Normal)
@@ -29,6 +29,19 @@ export const CROPS: Record<CropType, CropData> = {
   // Secret
   'Void Pear': { type: 'Void Pear', displayName: 'Void Pear', rarity: 'Secret', buyPrice: 8000, sellPrice: 20000, growTime: 10800, icon: '🌑', bonus: 'Cosmic particles' },
   'Prism Fruit': { type: 'Prism Fruit', displayName: 'Prism Fruit', rarity: 'Secret', buyPrice: 10000, sellPrice: 25000, growTime: 14400, icon: '🌀', bonus: 'Dark cosmic energy' },
+
+  // New Myth
+  'Dragon Tooth': { type: 'Dragon Tooth', displayName: 'Dragon Tooth', rarity: 'Myth', buyPrice: 7000, sellPrice: 17000, growTime: 9000, icon: '🦷', bonus: 'Sharp and powerful' },
+
+  // New Secret
+  'Demonic Core': { type: 'Demonic Core', displayName: 'Demonic Core', rarity: 'Secret', buyPrice: 15000, sellPrice: 40000, growTime: 16200, icon: '☢️', bonus: 'Highly unstable' },
+
+  // Divine
+  'God Apple': { type: 'God Apple', displayName: 'God Apple', rarity: 'Divine', buyPrice: 20000, sellPrice: 60000, growTime: 16200, icon: '🍎', bonus: 'Forbidden knowledge' },
+  'Celestial Berry': { type: 'Celestial Berry', displayName: 'Celestial Berry', rarity: 'Divine', buyPrice: 25000, sellPrice: 75000, growTime: 18000, icon: '🫐', bonus: 'Star-touched' },
+  'Heaven Fruit': { type: 'Heaven Fruit', displayName: 'Heaven Fruit', rarity: 'Divine', buyPrice: 30000, sellPrice: 90000, growTime: 19800, icon: '🍐', bonus: 'Angelic sweetness' },
+  'Light Core': { type: 'Light Core', displayName: 'Light Core', rarity: 'Divine', buyPrice: 40000, sellPrice: 120000, growTime: 21600, icon: '✨', bonus: 'Pure radiance' },
+  'Angelic Mango': { type: 'Angelic Mango', displayName: 'Angelic Mango', rarity: 'Divine', buyPrice: 50000, sellPrice: 150000, growTime: 23400, icon: '🥭', bonus: 'Divine flavor' },
 };
 
 export const ANIMALS: Record<AnimalType, AnimalData> = {
@@ -45,6 +58,36 @@ export const ANIMAL_PRODUCTS: Record<AnimalProductType, AnimalProductData> = {
   Feathers: { type: 'Feathers', sellPrice: 20, icon: '🪶' },
 };
 
+export const INFUSIONS: Record<InfusionType, { multiplier: number; icon: string; color: string }> = {
+  Lucky: { multiplier: 2, icon: '🍀', color: 'text-green-400' },
+  Corrupted: { multiplier: 3, icon: '💀', color: 'text-purple-600' },
+  Hollowed: { multiplier: 3, icon: '👻', color: 'text-blue-300' },
+  Darker: { multiplier: 4, icon: '🌑', color: 'text-slate-900' },
+  Dragonic: { multiplier: 5, icon: '🐲', color: 'text-red-600' },
+  Radioactive: { multiplier: 10, icon: '☢️', color: 'text-yellow-400' },
+  Random: { multiplier: 1, icon: '?', color: 'text-slate-400' },
+};
+
+export const TONIC_PRICES: Record<InfusionType, number> = {
+  Lucky: 150,
+  Corrupted: 400,
+  Hollowed: 400,
+  Darker: 800,
+  Dragonic: 2000,
+  Radioactive: 10000,
+  Random: 1000,
+};
+
+export const TONICS: Record<InfusionType, { displayName: string; icon: string; buyPrice: number }> = {
+  Lucky: { displayName: 'Lucky Tonic', icon: '🧪', buyPrice: TONIC_PRICES.Lucky },
+  Corrupted: { displayName: 'Corrupted Tonic', icon: '🧪', buyPrice: TONIC_PRICES.Corrupted },
+  Hollowed: { displayName: 'Hollowed Tonic', icon: '🧪', buyPrice: TONIC_PRICES.Hollowed },
+  Darker: { displayName: 'Darker Tonic', icon: '🧪', buyPrice: TONIC_PRICES.Darker },
+  Dragonic: { displayName: 'Dragonic Tonic', icon: '🧪', buyPrice: TONIC_PRICES.Dragonic },
+  Radioactive: { displayName: 'Radioactive Tonic', icon: '🧪', buyPrice: TONIC_PRICES.Radioactive },
+  Random: { displayName: 'Random Tonic', icon: '🧪', buyPrice: TONIC_PRICES.Random },
+};
+
 export const INITIAL_MONEY = 15;
 export const INITIAL_PLOTS = 4;
 export const PLOT_COST = 100;
@@ -54,3 +97,5 @@ export const INITIAL_CAGES = 4;
 export const MAX_CAGES = 8;
 export const AUTO_HARVEST_DURATION = 3600 * 1000; // 1 hour in ms
 export const PREMIUM_PACK_PRICE = 30; // 30 MAD
+
+export const RARITY_ORDER: Rarity[] = ['NR', 'MID', 'Legendary', 'Myth', 'Secret', 'Divine'];
