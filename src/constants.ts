@@ -96,6 +96,6 @@ export const CAGE_COST = 100;
 export const INITIAL_CAGES = 4;
 export const MAX_CAGES = 8;
 export const AUTO_HARVEST_DURATION = 3600 * 1000; // 1 hour in ms
-export const PREMIUM_PACK_PRICE = 30; // 30 MAD
+export const PREMIUM_PACK_PRICE = 2.99; // 2.99 USD
 
 export const RARITY_ORDER: Rarity[] = ['NR', 'MID', 'Legendary', 'Myth', 'Secret', 'Divine'];

@@ -27,7 +27,9 @@ import {
   User,
   HelpCircle,
   FlaskConical,
-  RotateCcw
+  RotateCcw,
+  MessageCircle,
+  Instagram
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CropType, ToolType, PlotState, GameState, Rarity, AnimalType, CageState, AnimalProductType, InfusionType } from './types';
@@ -78,6 +80,17 @@ const getInfusionMultiplier = (infusions: InfusionType[]) => {
     const infusion = INFUSIONS[inf];
     return acc * (infusion ? infusion.multiplier : 1);
   }, 1);
+};
+
+const formatCurrency = (amount: number) => {
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: 'USD',
+    }).format(amount);
+  } catch (e) {
+    return `$${amount.toFixed(2)}`;
+  }
 };
 
 const rollForInfusions = (): InfusionType[] => {
@@ -351,7 +364,7 @@ export default function App() {
   
   // Load game state
   useEffect(() => {
-    const saved = localStorage.getItem('pocket_farm_save_v2');
+    const saved = localStorage.getItem('pocket_farm_save_v3');
     if (saved) {
       try {
         const parsed: GameState = JSON.parse(saved);
@@ -448,7 +461,7 @@ export default function App() {
   // Save game state
   useEffect(() => {
     const save = () => {
-      localStorage.setItem('pocket_farm_save_v2', JSON.stringify({
+      localStorage.setItem('pocket_farm_save_v3', JSON.stringify({
         ...gameState,
         lastSaved: Date.now()
       }));
@@ -1675,7 +1688,7 @@ export default function App() {
                       }}
                       className="w-full py-3 bg-white text-orange-600 rounded-2xl font-black shadow-lg hover:scale-105 transition-transform flex items-center justify-center gap-2"
                     >
-                      Buy for {PREMIUM_PACK_PRICE} MAD
+                      Buy for {formatCurrency(PREMIUM_PACK_PRICE)}
                     </button>
                   )}
                 </div>
@@ -2392,6 +2405,40 @@ export default function App() {
                       <div>
                         <h5 className="font-black text-slate-800 uppercase text-xs tracking-widest mb-1">Animals</h5>
                         <p className="text-sm text-slate-500 leading-relaxed">Unlock the Animal Place to raise cows, sheep, and more. They produce valuable items over time.</p>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-slate-100">
+                      <h5 className="font-black text-slate-800 uppercase text-xs tracking-widest mb-4">Connect with Us</h5>
+                      <div className="grid grid-cols-2 gap-3">
+                        <a 
+                          href="https://discord.gg/dRFcH6eSAy" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 p-3 bg-indigo-50 rounded-2xl border border-indigo-100 hover:bg-indigo-100 transition-colors group"
+                        >
+                          <div className="w-8 h-8 bg-indigo-500 text-white rounded-xl flex items-center justify-center shadow-sm">
+                            <MessageCircle size={18} />
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-black text-indigo-600 uppercase tracking-wider">Discord</p>
+                            <p className="text-[8px] text-indigo-400 font-bold">Join Server</p>
+                          </div>
+                        </a>
+                        <a 
+                          href="https://www.instagram.com/simox.__.m.h/" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 p-3 bg-pink-50 rounded-2xl border border-pink-100 hover:bg-pink-100 transition-colors group"
+                        >
+                          <div className="w-8 h-8 bg-pink-500 text-white rounded-xl flex items-center justify-center shadow-sm">
+                            <Instagram size={18} />
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-black text-pink-600 uppercase tracking-wider">Instagram</p>
+                            <p className="text-[8px] text-pink-400 font-bold">Follow Us</p>
+                          </div>
+                        </a>
                       </div>
                     </div>
                   </>
