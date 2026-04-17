@@ -63,6 +63,8 @@ export interface CageState {
 
 export type TutorialStep = 'welcome' | 'open_shop' | 'buy_seeds' | 'plant_crop' | 'harvest_crop' | 'completed';
 
+import { LanguageCode } from './translations';
+
 export interface GameState {
   money: number;
   unlockedPlots: number;
@@ -87,4 +89,5 @@ export interface GameState {
   totalMoneyEarned: number;
   totalCropsHarvested: number;
   lastSaved: number;
+  language: LanguageCode;
 }

@@ -29,10 +29,13 @@ import {
   FlaskConical,
   RotateCcw,
   MessageCircle,
-  Instagram
+  Instagram,
+  Settings,
+  Languages
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CropType, ToolType, PlotState, GameState, Rarity, AnimalType, CageState, AnimalProductType, InfusionType } from './types';
+import { TRANSLATIONS, LANGUAGES, LanguageCode } from './translations';
 import { 
   CROPS, 
   ANIMALS,
@@ -80,6 +83,43 @@ const getInfusionMultiplier = (infusions: InfusionType[]) => {
     const infusion = INFUSIONS[inf];
     return acc * (infusion ? infusion.multiplier : 1);
   }, 1);
+};
+
+const INITIAL_STATE_BASE: Omit<GameState, 'lastSaved'> = {
+  money: INITIAL_MONEY,
+  unlockedPlots: INITIAL_PLOTS,
+  inventory: {},
+  seedInventory: {},
+  animalInventory: {},
+  animalProductInventory: {},
+  tonicInventory: {},
+  plots: Array.from({ length: 16 }, (_, i) => ({
+    id: i,
+    crop: null,
+    plantedAt: null,
+    isReady: false,
+    infusions: []
+  })),
+  cages: Array.from({ length: MAX_CAGES }, (_, i) => ({
+    id: i,
+    type: null,
+    count: 0,
+    lastProduction: null
+  })),
+  unlockedCages: INITIAL_CAGES,
+  animalAreaUnlocked: false,
+  activeTool: 'Hand',
+  selectedSeed: 'Carrot',
+  selectedTonic: null,
+  autoHarvestUntil: null,
+  hasPremiumPack: false,
+  permanentAutoHarvest: false,
+  hasGrowthBoost: false,
+  tutorialStep: 'welcome',
+  hasCompletedTutorial: false,
+  totalMoneyEarned: 0,
+  totalCropsHarvested: 0,
+  language: 'en'
 };
 
 const formatCurrency = (amount: number) => {
@@ -301,39 +341,7 @@ const Plot = memo(({
 export default function App() {
   const [screen, setScreen] = useState<'menu' | 'farm'>('menu');
   const [gameState, setGameState] = useState<GameState>({
-    money: INITIAL_MONEY,
-    unlockedPlots: INITIAL_PLOTS,
-    inventory: {},
-    seedInventory: {},
-    animalInventory: {},
-    animalProductInventory: {},
-    tonicInventory: {},
-    plots: Array.from({ length: 16 }, (_, i) => ({
-      id: i,
-      crop: null,
-      plantedAt: null,
-      isReady: false,
-      infusions: []
-    })),
-    cages: Array.from({ length: MAX_CAGES }, (_, i) => ({
-      id: i,
-      type: null,
-      count: 0,
-      lastProduction: null
-    })),
-    unlockedCages: INITIAL_CAGES,
-    animalAreaUnlocked: false,
-    activeTool: 'Hand',
-    selectedSeed: 'Carrot',
-    selectedTonic: null,
-    autoHarvestUntil: null,
-    hasPremiumPack: false,
-    permanentAutoHarvest: false,
-    hasGrowthBoost: false,
-    tutorialStep: 'welcome',
-    hasCompletedTutorial: false,
-    totalMoneyEarned: 0,
-    totalCropsHarvested: 0,
+    ...INITIAL_STATE_BASE,
     lastSaved: Date.now(),
   });
 
@@ -352,6 +360,8 @@ export default function App() {
   const [showRoyMenu, setShowRoyMenu] = useState(false);
   const [showRoyHelp, setShowRoyHelp] = useState(false);
   const [helpTab, setHelpTab] = useState<'main' | 'fruits' | 'infusions'>('main');
+  const [showSettings, setShowSettings] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [spinResult, setSpinResult] = useState<CropType | null>(null);
   const [toolsExpanded, setToolsExpanded] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
@@ -359,6 +369,22 @@ export default function App() {
   const [offlineReadyCount, setOfflineReadyCount] = useState(0);
   const [showSellAllConfirm, setShowSellAllConfirm] = useState(false);
   const [sellAllFeedback, setSellAllFeedback] = useState<string | null>(null);
+
+  const t = (key: string) => {
+    return TRANSLATIONS[gameState.language]?.[key] || TRANSLATIONS['en'][key] || key;
+  };
+
+  const handleReset = () => {
+    const newState = {
+      ...INITIAL_STATE_BASE,
+      lastSaved: Date.now(),
+      language: gameState.language // Keep language preference
+    };
+    setGameState(newState);
+    setShowResetConfirm(false);
+    setShowSettings(false);
+    setScreen('menu');
+  };
 
   // --- Persistence & Notifications ---
   
@@ -375,6 +401,7 @@ export default function App() {
         if (!parsed.animalInventory) parsed.animalInventory = {};
         if (!parsed.cages) parsed.cages = [];
         if (!parsed.plots) parsed.plots = [];
+        if (!parsed.language) parsed.language = 'en';
         
         const now = Date.now();
         let readyCount = 0;
@@ -566,7 +593,15 @@ export default function App() {
         // Auto-harvest logic
         let newInventory = { ...prev.inventory };
         let harvestedCount = 0;
-        const isAutoHarvestActive = (prev.autoHarvestUntil && now < prev.autoHarvestUntil) || prev.permanentAutoHarvest;
+        let autoHarvestUntil = prev.autoHarvestUntil;
+        
+        // Clear expired auto-harvest
+        if (autoHarvestUntil && now >= autoHarvestUntil && !prev.permanentAutoHarvest) {
+          autoHarvestUntil = null;
+          changed = true;
+        }
+
+        const isAutoHarvestActive = (autoHarvestUntil && now < autoHarvestUntil) || prev.permanentAutoHarvest;
 
         if (isAutoHarvestActive) {
           newPlots.forEach((plot, idx) => {
@@ -588,6 +623,7 @@ export default function App() {
             ...prev, 
             plots: newPlots, 
             inventory: newInventory,
+            autoHarvestUntil,
             totalCropsHarvested: prev.totalCropsHarvested + harvestedCount
           };
         }
@@ -934,13 +970,20 @@ export default function App() {
 
   const [timeStr, setTimeStr] = useState<string | null>(null);
   useEffect(() => {
-    const t = setInterval(() => {
-      if (gameState.autoHarvestUntil) {
-        setTimeStr(getTimeRemaining(gameState.autoHarvestUntil));
+    const update = () => {
+      if (gameState.permanentAutoHarvest) {
+        setTimeStr(null);
+      } else if (gameState.autoHarvestUntil) {
+        const remaining = getTimeRemaining(gameState.autoHarvestUntil);
+        setTimeStr(remaining);
+      } else {
+        setTimeStr(null);
       }
-    }, 1000);
+    };
+    update();
+    const t = setInterval(update, 1000);
     return () => clearInterval(t);
-  }, [gameState.autoHarvestUntil]);
+  }, [gameState.autoHarvestUntil, gameState.permanentAutoHarvest]);
 
   // --- Animal Production ---
   useEffect(() => {
@@ -1059,7 +1102,7 @@ export default function App() {
             <Sprout size={80} className="text-green-600" />
           </div>
           <h1 className="text-5xl font-black text-green-800 tracking-tight">Pocket Farm</h1>
-          <p className="text-green-700 font-medium mt-2">Your tiny garden in your pocket</p>
+          <p className="text-green-700 font-medium mt-2">{t('subtitle')}</p>
         </motion.div>
 
         <motion.button
@@ -1068,7 +1111,7 @@ export default function App() {
           onClick={() => setScreen('farm')}
           className="bg-green-600 text-white px-12 py-4 rounded-full text-2xl font-bold shadow-lg flex items-center gap-3"
         >
-          <Play fill="currentColor" /> Play
+          <Play fill="currentColor" /> {t('play')}
         </motion.button>
       </div>
     );
@@ -1077,32 +1120,40 @@ export default function App() {
   return (
     <div className="min-h-screen bg-amber-50 flex flex-col max-w-md mx-auto relative overflow-hidden font-sans text-slate-800">
       {/* Header */}
-      <header className="bg-white p-4 shadow-sm flex items-center justify-between sticky top-0 z-20">
-        <div className="flex items-center gap-2 bg-amber-100 px-3 py-1.5 rounded-full border border-amber-200">
+      <header className="bg-white p-4 shadow-sm flex items-center justify-between sticky top-0 z-20" dir={gameState.language === 'ar' || gameState.language === 'ur' ? 'rtl' : 'ltr'}>
+        <div className="flex items-center gap-2 bg-amber-100 px-3 py-1.5 rounded-full border border-amber-200 shrink-0">
           <Coins className="text-amber-600" size={20} />
-          <span className="font-bold text-lg">£{gameState.money}</span>
+          <span className="font-bold text-base md:text-lg">£{gameState.money}</span>
         </div>
-        <h2 className="font-black text-xl text-green-700 italic">Pocket Farm</h2>
-        <button 
-          onClick={() => setScreen('menu')}
-          className="p-2 text-slate-400 hover:text-slate-600"
-        >
-          <X size={24} />
-        </button>
+        <h2 className="font-black text-lg md:text-xl text-green-700 italic truncate mx-2">Pocket Farm</h2>
+        <div className="flex items-center gap-1">
+          <button 
+            onClick={() => setShowSettings(true)}
+            className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <Settings size={22} />
+          </button>
+          <button 
+            onClick={() => setScreen('menu')}
+            className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <X size={22} />
+          </button>
+        </div>
       </header>
 
       {/* Animals Button */}
       {gameState.animalAreaUnlocked && (
-        <motion.button
-          key="animals-button"
-          initial={{ x: 20, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          onClick={() => setShowAnimalScreen(true)}
-          className="absolute top-20 right-4 z-30 bg-purple-600 text-white p-3 rounded-2xl shadow-lg border-2 border-purple-400 flex items-center gap-2 font-black text-sm"
-        >
-          <PawPrint size={20} />
-          <span>Animals</span>
-        </motion.button>
+          <motion.button
+            key="animals-button"
+            initial={{ x: 20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            onClick={() => setShowAnimalScreen(true)}
+            className="absolute top-20 right-4 z-30 bg-purple-600 text-white p-3 rounded-2xl shadow-lg border-2 border-purple-400 flex items-center gap-2 font-black text-sm"
+          >
+            <PawPrint size={20} />
+            <span>{t('animals')}</span>
+          </motion.button>
       )}
 
       {/* Roy NPC Button */}
@@ -1116,8 +1167,26 @@ export default function App() {
         <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center text-amber-600">
           <User size={16} />
         </div>
-        <span>Roy</span>
+        <span>{t('roy')}</span>
       </motion.button>
+
+      {/* Auto Harvest Indicator */}
+      <AnimatePresence>
+        {(gameState.permanentAutoHarvest || (gameState.autoHarvestUntil && gameState.autoHarvestUntil > Date.now())) && (
+          <motion.div
+            key="auto-harvest-indicator"
+            initial={{ y: -20, opacity: 0, x: '-50%' }}
+            animate={{ y: 0, opacity: 1, x: '-50%' }}
+            exit={{ y: -20, opacity: 0, x: '-50%' }}
+            className="absolute top-20 left-1/2 z-30 bg-green-50 text-green-700 px-4 py-1.5 rounded-full shadow-md border border-green-200 flex items-center gap-2 font-black text-[10px] whitespace-nowrap"
+          >
+            <Zap size={12} className="fill-green-500 animate-pulse" />
+            <span>
+              {t('auto_harvest')}: {gameState.permanentAutoHarvest ? t('active') : (timeStr || '...')}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main Farm Area */}
       <main className="flex-1 p-4 flex items-center justify-center overflow-hidden">
@@ -1151,7 +1220,7 @@ export default function App() {
             className="flex flex-col items-center gap-1 text-amber-600 hover:text-amber-700 transition-all active:scale-90"
           >
             <Package size={24} />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Inventory</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider">{t('inventory')}</span>
           </button>
 
           {/* Middle: Tool Button */}
@@ -1222,7 +1291,7 @@ export default function App() {
             className="flex flex-col items-center gap-1 text-green-600 hover:text-green-700 transition-all active:scale-90"
           >
             <ShoppingBasket size={24} />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Shop</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider">{t('shop')}</span>
           </button>
         </div>
       </div>
@@ -1317,7 +1386,7 @@ export default function App() {
               className="bg-white w-full max-w-xs rounded-[2rem] p-6 shadow-2xl"
               onClick={e => e.stopPropagation()}
             >
-              <h3 className="text-xl font-black text-slate-800 mb-4 text-center">Plant a Seed</h3>
+              <h3 className="text-xl font-black text-slate-800 mb-4 text-center">{t('plant')}</h3>
               <div className="grid grid-cols-1 gap-3 max-h-[50vh] overflow-y-auto pr-2">
                 {sortCrops(Object.keys(CROPS)).map(key => {
                   const type = key as CropType;
@@ -1403,7 +1472,7 @@ export default function App() {
             >
               <div className="flex justify-between items-center mb-6 shrink-0">
                 <div className="flex items-center gap-3">
-                  <h3 className="text-2xl font-black text-slate-800">Shop</h3>
+                  <h3 className="text-2xl font-black text-slate-800">{t('shop')}</h3>
                   <div className="flex bg-slate-100 p-1 rounded-xl">
                     <button 
                       onClick={() => setShopTab('seeds')}
@@ -1411,7 +1480,7 @@ export default function App() {
                         shopTab === 'seeds' ? 'bg-white text-green-600 shadow-sm' : 'text-slate-400'
                       }`}
                     >
-                      Seeds
+                      {t('fruits')}
                     </button>
                     <button 
                       onClick={() => setShopTab('tonics')}
@@ -1419,7 +1488,7 @@ export default function App() {
                         shopTab === 'tonics' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-400'
                       }`}
                     >
-                      Tonics
+                      {t('tonics')}
                     </button>
                   </div>
                   <button 
@@ -1477,7 +1546,7 @@ export default function App() {
 
                     {/* Seeds Section */}
                     <div>
-                      <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">Buy Seeds</h4>
+                      <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">{t('buy_seeds')}</h4>
                       <div className="grid grid-cols-1 gap-3">
                         {sortCrops(Object.keys(CROPS)).map(key => {
                           const type = key as CropType;
@@ -1537,8 +1606,8 @@ export default function App() {
                   </>
                 ) : (
                   <div className="space-y-4">
-                    <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">Tonics</h4>
-                    <p className="text-[10px] text-slate-500 font-medium italic">Apply to growing crops to add powerful infusions!</p>
+                    <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">{t('tonics')}</h4>
+                    <p className="text-[10px] text-slate-500 font-medium italic">{t('apply_to_growing')}</p>
                     <div className="grid grid-cols-1 gap-3">
                       {(TONICS ? (Object.keys(TONICS) as InfusionType[]) : []).map(type => {
                         const tonic = TONICS?.[type];
@@ -1560,7 +1629,7 @@ export default function App() {
                                     {type === 'Random' ? 'Random Infusion' : `${type} (x${infusion?.multiplier || 1})`}
                                   </span>
                                   <span className="text-[10px] text-slate-400 font-bold">
-                                    Owned: {gameState.tonicInventory[type] || 0}
+                                    {t('owned')}: {gameState.tonicInventory[type] || 0}
                                   </span>
                                 </div>
                               </div>
@@ -1668,17 +1737,17 @@ export default function App() {
                 <div className="relative z-10">
                   <h5 className="text-xl font-black mb-2">Premium Farm Pack</h5>
                   <ul className="text-xs space-y-2 mb-6 opacity-90 font-bold">
-                    <li className="flex items-center gap-2"><span>✨</span> Permanent Auto-Harvest</li>
-                    <li className="flex items-center gap-2"><span>🐾</span> Unlock Animal Place</li>
-                    <li className="flex items-center gap-2"><span>💰</span> 300 Coins Bonus</li>
-                    <li className="flex items-center gap-2"><span>🌱</span> +2 Extra Plots</li>
-                    <li className="flex items-center gap-2"><span>🐄</span> 1 of Each Animal</li>
-                    <li className="flex items-center gap-2"><span>⚡</span> +25% Crop Growing Speed</li>
+                    <li className="flex items-center gap-2"><span>✨</span> {t('auto_harvest')}</li>
+                    <li className="flex items-center gap-2"><span>🐾</span> {t('animal_place')}</li>
+                    <li className="flex items-center gap-2"><span>💰</span> {t('bonus_coins')}</li>
+                    <li className="flex items-center gap-2"><span>🌱</span> {t('extra_plots')}</li>
+                    <li className="flex items-center gap-2"><span>🐄</span> {t('each_animal')}</li>
+                    <li className="flex items-center gap-2"><span>⚡</span> {t('growth_speed')}</li>
                   </ul>
                   
                   {gameState.hasPremiumPack ? (
                     <div className="w-full py-3 bg-white/20 text-white rounded-2xl font-black text-center border border-white/30">
-                      ALREADY OWNED
+                      {t('already_owned')}
                     </div>
                   ) : (
                     <button 
@@ -1688,7 +1757,7 @@ export default function App() {
                       }}
                       className="w-full py-3 bg-white text-orange-600 rounded-2xl font-black shadow-lg hover:scale-105 transition-transform flex items-center justify-center gap-2"
                     >
-                      Buy for {formatCurrency(PREMIUM_PACK_PRICE)}
+                      {t('buy')} for {formatCurrency(PREMIUM_PACK_PRICE)}
                     </button>
                   )}
                 </div>
@@ -1719,13 +1788,13 @@ export default function App() {
             >
               <div className="flex justify-between items-center mb-4 shrink-0">
                 <div className="flex items-center gap-3">
-                  <h3 className="text-2xl font-black text-slate-800">Inventory</h3>
+                  <h3 className="text-2xl font-black text-slate-800">{t('inventory')}</h3>
                   {hasSellableItems && (
                     <button 
                       onClick={() => setShowSellAllConfirm(true)}
                       className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-[10px] uppercase font-black hover:bg-green-200 transition-colors shadow-sm"
                     >
-                      Sell All
+                      {t('sell_all')}
                     </button>
                   )}
                 </div>
@@ -1739,7 +1808,7 @@ export default function App() {
                     inventoryTab === 'crops' ? 'bg-white text-green-600 shadow-sm' : 'text-slate-400'
                   }`}
                 >
-                  Fruits
+                  {t('fruits')}
                 </button>
                 <button 
                   onClick={() => setInventoryTab('animals')}
@@ -1747,7 +1816,7 @@ export default function App() {
                     inventoryTab === 'animals' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'
                   }`}
                 >
-                  Animals
+                  {t('animals')}
                 </button>
                 <button 
                   onClick={() => setInventoryTab('tonics')}
@@ -1755,7 +1824,7 @@ export default function App() {
                     inventoryTab === 'tonics' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-400'
                   }`}
                 >
-                  Tonics
+                  {t('tonics')}
                 </button>
               </div>
               
@@ -2551,6 +2620,118 @@ export default function App() {
               >
                 Awesome!
               </button>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* Settings Modal */}
+        {showSettings && (
+          <motion.div 
+            key="settings-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 z-[90] flex items-center justify-center p-6"
+            onClick={() => setShowSettings(false)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white w-full max-w-sm rounded-[2.5rem] p-6 shadow-2xl flex flex-col max-h-[80vh]"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-6 shrink-0" dir={gameState.language === 'ar' || gameState.language === 'ur' ? 'rtl' : 'ltr'}>
+                <h4 className="text-2xl font-black text-slate-800 flex items-center gap-2">
+                  <Settings size={28} className="text-slate-400" />
+                  {t('settings')}
+                </h4>
+                <button onClick={() => setShowSettings(false)} className="p-2 bg-slate-100 rounded-full">
+                  <X size={20}/>
+                </button>
+              </div>
+
+              <div className="overflow-y-auto pr-2 space-y-8 custom-scrollbar">
+                {/* Language Selection */}
+                <div>
+                  <h5 className="font-black text-slate-400 uppercase text-[10px] tracking-widest mb-4 flex items-center gap-2">
+                    <Languages size={14} />
+                    {t('select_language')}
+                  </h5>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(Object.keys(LANGUAGES) as LanguageCode[]).map(code => (
+                      <button
+                        key={`lang-${code}`}
+                        onClick={() => setGameState(prev => ({ ...prev, language: code }))}
+                        className={`py-3 px-4 rounded-2xl text-xs font-bold border-2 transition-all ${
+                          gameState.language === code 
+                            ? 'bg-green-600 border-green-600 text-white shadow-md' 
+                            : 'bg-slate-50 border-slate-100 text-slate-600 hover:border-slate-200'
+                        }`}
+                      >
+                        {LANGUAGES[code]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Danger Zone */}
+                <div className="pt-6 border-t border-slate-100">
+                  <h5 className="font-black text-red-400 uppercase text-[10px] tracking-widest mb-4">
+                    Danger Zone
+                  </h5>
+                  <button 
+                    onClick={() => setShowResetConfirm(true)}
+                    className="w-full py-4 bg-red-50 text-red-600 border-2 border-red-100 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-red-100 transition-all"
+                  >
+                    <RotateCcw size={20} />
+                    {t('reset_game')}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* Reset Confirmation Modal */}
+        {showResetConfirm && (
+          <motion.div 
+            key="reset-confirm-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 z-[110] flex items-center justify-center p-6 text-center"
+            onClick={() => setShowResetConfirm(false)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white w-full max-w-xs rounded-[2.5rem] p-8 shadow-2xl"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="w-20 h-20 bg-red-100 text-red-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-red-50">
+                <RotateCcw size={40} />
+              </div>
+              <h4 className="text-2xl font-black text-slate-800 mb-4">{t('reset_game')}</h4>
+              <p className="text-slate-500 mb-8 leading-relaxed font-medium">
+                {t('reset_confirm')}
+              </p>
+              
+              <div className="space-y-3">
+                <button 
+                  onClick={handleReset}
+                  className="w-full py-5 bg-red-600 text-white rounded-2xl font-black shadow-xl shadow-red-100 hover:bg-red-700 transition-all active:scale-95"
+                >
+                  {t('yes_reset')}
+                </button>
+                <button 
+                  onClick={() => setShowResetConfirm(false)}
+                  className="w-full py-4 bg-slate-100 text-slate-500 rounded-2xl font-black hover:bg-slate-200 transition-all"
+                >
+                  {t('cancel')}
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}
