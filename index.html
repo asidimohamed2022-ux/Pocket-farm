@@ -4,10 +4,37 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Google AI Studio App</title>
+    <link rel="manifest" href="manifest.json">
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+      // 1️⃣ Paste the ID with the "/" here
+const AD_UNIT_ID = "ca-app-pub-9911132333919550/5135171554"; 
+
+// 2️⃣ Function for your "Watch Ad" button 🎬
+function watchAd() {
+    if (window.AndroidBridge) {
+        // Tells the app to show the real ad 📺
+        window.AndroidBridge.showRewardedAd(AD_UNIT_ID);
+    } else {
+        // Testing in browser 🌐
+        alert("Simulating Ad...");
+        onAdFinished(); 
+    }
+}
+
+// 3️⃣ The reward logic 💎
+function onAdFinished() {
+    const ONE_HOUR = 60 * 60 * 1000;
+    localStorage.setItem('harvestEnd', Date.now() + ONE_HOUR);
+    alert("🚀 Auto-Harvest active for 1 hour!");
+      }
+    </script>
   </body>
 </html>
 
