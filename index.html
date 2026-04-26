@@ -3,37 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pocket Farm</title>
-    <link rel="manifest" href="assets/manifest-jw-Nvfc2.json">
-    <script type="module" crossorigin src="assets/index-D-NTRiz1.js"></script>
+    <title>My Google AI Studio App</title>
   </head>
   <body>
     <div id="root"></div>
-    <script>
-      if ('serviceWorker' in navigator) {
-        // Make sure sw.js is in the main folder, not assets!
-        navigator.serviceWorker.register('sw.js');
-      }
-
-      const AD_UNIT_ID = "ca-app-pub-9911132333919550/5135171554"; 
-
-      function watchAd() {
-          if (window.AndroidBridge) {
-              window.AndroidBridge.showRewardedAd(AD_UNIT_ID);
-          } else {
-              alert("Simulating Ad...");
-              onAdFinished(); 
-          }
-      }
-
-      function onAdFinished() {
-          const ONE_HOUR = 60 * 60 * 1000;
-          localStorage.setItem('harvestEnd', Date.now() + ONE_HOUR);
-          alert("🚀 Auto-Harvest active for 1 hour!");
-      }
-    </script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
-</html>    </script>
-  </body>
-  </html>
-  
+</html>
+

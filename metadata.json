@@ -1,0 +1,7 @@
+{
+  "name": "Pocket Farm",
+  "description": "A cozy 2D mobile farming game where you plant, grow, and harvest crops to expand your farm.",
+  "requestFramePermissions": [
+    "notifications"
+  ]
+}
