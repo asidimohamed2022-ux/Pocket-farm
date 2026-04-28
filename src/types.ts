@@ -1,6 +1,6 @@
-export type Rarity = 'NR' | 'MID' | 'Legendary' | 'Myth' | 'Secret' | 'Divine';
+export type Rarity = 'NR' | 'MID' | 'Legendary' | 'Myth' | 'Secret' | 'Divine' | 'Celestial';
 
-export type InfusionType = 'Lucky' | 'Corrupted' | 'Hollowed' | 'Darker' | 'Dragonic' | 'Radioactive' | 'Random';
+export type InfusionType = 'Lucky' | 'Corrupted' | 'Hollowed' | 'Darker' | 'Dragonic' | 'Radioactive' | 'Divine' | 'Random';
 
 export interface InfusedCrop {
   type: CropType;
@@ -13,7 +13,7 @@ export type CropType =
   | 'Pumpkin' | 'Cactus' | 'Mango' | 'Kiwi'
   | 'Sky Ruller' | 'Moon Glower' | 'Sun Skaper' | 'Cozmic Apple'
   | 'Banana Tails' | 'Miniral Berys' | 'Trial Melon' | 'Crystal Strawberry' | 'Void Pear' | 'Prism Fruit'
-  | 'Dragon Tooth' | 'Demonic Core' | 'God Apple' | 'Celestial Berry' | 'Heaven Fruit' | 'Light Core' | 'Angelic Mango';
+  | 'Dragon Tooth' | 'Demonic Core' | 'God Apple' | 'Celestial Berry' | 'Heaven Fruit' | 'Light Core' | 'Angelic Mango' | 'Guardian’s Eye' | 'Stardust Apple' | 'Nebula Plum';
 
 export interface CropData {
   type: CropType;

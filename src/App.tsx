@@ -157,6 +157,7 @@ const rollForInfusions = (): InfusionType[] => {
     Darker: 0.02,
     Dragonic: 0.01,
     Radioactive: 0.005,
+    Divine: 0.001,
     Random: 0,
   };
 
@@ -201,6 +202,7 @@ const RarityEffect = memo(({ rarity, children, className = "" }: { rarity: Rarit
     Myth: "shadow-[0_0_20px_rgba(147,51,234,0.7)] animate-pulse",
     Secret: "shadow-[0_0_25px_rgba(0,0,0,0.8)] bg-slate-200 animate-pulse",
     Divine: "shadow-[0_0_35px_rgba(255,255,255,0.9),0_0_20px_rgba(255,215,0,0.8)] bg-amber-300 animate-pulse",
+    Celestial: "shadow-[0_0_35px_rgba(224,242,254,0.9),0_0_15px_rgba(255,255,255,1)] bg-sky-50",
   };
 
   return (
@@ -439,6 +441,7 @@ export default function App() {
               Darker: 0.0002,
               Dragonic: 0.0001,
               Radioactive: 0.00005,
+              Divine: 0.00001,
               Random: 0,
             };
             
@@ -583,6 +586,7 @@ export default function App() {
               Darker: 0.0002,
               Dragonic: 0.0001,
               Radioactive: 0.00005,
+              Divine: 0.00001,
               Random: 0,
             };
 
@@ -705,7 +709,7 @@ export default function App() {
             // Logic for Random Tonic
             let infusionToApply: InfusionType = tonicType;
             if (tonicType === 'Random') {
-              const availableInfusions: InfusionType[] = ['Lucky', 'Corrupted', 'Hollowed', 'Darker', 'Dragonic', 'Radioactive'];
+              const availableInfusions: InfusionType[] = ['Lucky', 'Corrupted', 'Hollowed', 'Darker', 'Dragonic', 'Radioactive', 'Divine'];
               infusionToApply = availableInfusions[Math.floor(Math.random() * availableInfusions.length)];
             }
 
@@ -962,7 +966,8 @@ export default function App() {
     // Rarity weights
     const rand = Math.random() * 100;
     let rarity: Rarity = 'NR';
-    if (rand < 1) rarity = 'Divine';
+    if (rand < 0.1) rarity = 'Celestial';
+    else if (rand < 1) rarity = 'Divine';
     else if (rand < 4) rarity = 'Secret';
     else if (rand < 10) rarity = 'Myth';
     else if (rand < 20) rarity = 'Legendary';
@@ -1426,6 +1431,7 @@ export default function App() {
                       className={`flex items-center justify-between p-3 rounded-2xl border-2 transition-all group relative ${
                         crop.rarity === 'Secret' ? 'bg-black border-slate-800 hover:border-purple-900' : 
                         crop.rarity === 'Divine' ? 'bg-amber-400 border-amber-300 hover:border-amber-200' : 
+                        crop.rarity === 'Celestial' ? 'bg-sky-50 border-sky-300 hover:border-sky-400' : 
                         'bg-green-50 border-green-100 hover:border-green-300'
                       }`}
                     >
@@ -1440,6 +1446,7 @@ export default function App() {
                             <p className={`font-bold ${
                               crop.rarity === 'Secret' ? 'text-purple-500' : 
                               crop.rarity === 'Divine' ? 'text-white' : 
+                              crop.rarity === 'Celestial' ? 'text-sky-800' : 
                               'text-slate-800'
                             }`}>
                               {crop.displayName}
@@ -1448,6 +1455,7 @@ export default function App() {
                           <p className={`text-xs ${
                             crop.rarity === 'Secret' ? 'text-slate-400' : 
                             crop.rarity === 'Divine' ? 'text-amber-100' : 
+                            crop.rarity === 'Celestial' ? 'text-sky-600' : 
                             'text-slate-500'
                           }`}>
                             {count} seeds
@@ -1583,6 +1591,7 @@ export default function App() {
                               className={`flex items-center justify-between p-4 rounded-2xl border group relative transition-all ${
                                 crop.rarity === 'Secret' ? 'bg-black border-slate-800' : 
                                 crop.rarity === 'Divine' ? 'bg-amber-400 border-amber-300' : 
+                                crop.rarity === 'Celestial' ? 'bg-sky-50 border-sky-300' : 
                                 'bg-slate-50 border-slate-100'
                               }`}
                             >
@@ -1591,16 +1600,28 @@ export default function App() {
                                   <span className="text-4xl">{crop.icon}</span>
                                 </RarityEffect>
                                 <div>
-                                  <p className={`font-bold text-lg ${
-                                    crop.rarity === 'Secret' ? 'text-purple-500' : 
-                                    crop.rarity === 'Divine' ? 'text-white' : 
-                                    'text-slate-800'
-                                  }`}>
-                                    {crop.displayName}
-                                  </p>
+                                  <div className="flex items-center gap-2">
+                                    <p className={`font-bold text-lg ${
+                                      crop.rarity === 'Secret' ? 'text-purple-500' : 
+                                      crop.rarity === 'Divine' ? 'text-white' : 
+                                      crop.rarity === 'Celestial' ? 'text-sky-800' : 
+                                      'text-slate-800'
+                                    }`}>
+                                      {crop.displayName}
+                                    </p>
+                                    <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-tighter ${
+                                      crop.rarity === 'Celestial' ? 'bg-sky-200 text-sky-800' :
+                                      crop.rarity === 'Divine' ? 'bg-white/20 text-white' :
+                                      crop.rarity === 'Secret' ? 'bg-purple-900 text-purple-200' :
+                                      'bg-slate-200 text-slate-500'
+                                    }`}>
+                                      {crop.rarity}
+                                    </span>
+                                  </div>
                                   <p className={`text-xs ${
                                     crop.rarity === 'Secret' ? 'text-slate-400' : 
                                     crop.rarity === 'Divine' ? 'text-amber-100' : 
+                                    crop.rarity === 'Celestial' ? 'text-sky-600' : 
                                     'text-slate-500'
                                   }`}>
                                     In stock: {formatNumberShort(gameState.seedInventory[type] || 0)}
@@ -1885,6 +1906,7 @@ export default function App() {
                       className={`flex items-center justify-between p-4 rounded-2xl border group relative transition-all ${
                         crop.rarity === 'Secret' ? 'bg-black border-slate-800' : 
                         crop.rarity === 'Divine' ? 'bg-amber-400 border-amber-300' : 
+                        crop.rarity === 'Celestial' ? 'bg-sky-50 border-sky-300' : 
                         'bg-slate-50 border-slate-100'
                       }`}
                     >
@@ -1923,6 +1945,7 @@ export default function App() {
                             <p className={`font-bold text-lg ${
                               crop.rarity === 'Secret' ? 'text-purple-500' : 
                               crop.rarity === 'Divine' ? 'text-white' : 
+                              crop.rarity === 'Celestial' ? 'text-sky-800' : 
                               'text-slate-800'
                             }`}>
                               {crop.displayName}
@@ -1946,6 +1969,7 @@ export default function App() {
                           <p className={`text-sm ${
                             crop.rarity === 'Secret' ? 'text-slate-400' : 
                             crop.rarity === 'Divine' ? 'text-amber-100' : 
+                            crop.rarity === 'Celestial' ? 'text-sky-600' : 
                             'text-slate-500'
                           }`}>
                             Stock: {formatNumberShort(count)}
@@ -2550,7 +2574,16 @@ export default function App() {
                             <span className="text-2xl">{crop.icon}</span>
                             <div>
                               <p className="font-bold text-slate-800 text-sm">{crop.displayName}</p>
-                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{crop.rarity}</p>
+                              <p className={`text-[10px] font-bold uppercase tracking-widest ${
+                                crop.rarity === 'Celestial' ? 'text-sky-500' :
+                                crop.rarity === 'Divine' ? 'text-amber-500' :
+                                crop.rarity === 'Secret' ? 'text-purple-600' :
+                                crop.rarity === 'Myth' ? 'text-purple-400' :
+                                crop.rarity === 'Legendary' ? 'text-yellow-500' :
+                                'text-slate-400'
+                              }`}>
+                                {crop.rarity}
+                              </p>
                             </div>
                           </div>
                           <div className="text-right">
@@ -2623,11 +2656,20 @@ export default function App() {
               className="bg-white w-full max-w-xs rounded-[3rem] p-8 shadow-2xl text-center relative overflow-hidden"
               onClick={e => e.stopPropagation()}
             >
-              <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400" />
+              <div className={`absolute top-0 left-0 right-0 h-2 bg-gradient-to-r ${
+                CROPS[spinResult].rarity === 'Celestial' ? 'from-sky-400 via-white to-sky-400' :
+                CROPS[spinResult].rarity === 'Divine' ? 'from-amber-400 via-yellow-300 to-amber-400' :
+                CROPS[spinResult].rarity === 'Secret' ? 'from-purple-600 via-slate-800 to-purple-600' :
+                'from-green-400 via-emerald-300 to-green-400'
+              }`} />
               <h4 className="text-3xl font-black mb-6 text-slate-800">You Won!</h4>
               
               <div className="mb-6 relative">
-                <div className="absolute inset-0 bg-amber-100 blur-3xl rounded-full opacity-50 animate-pulse" />
+                <div className={`absolute inset-0 blur-3xl rounded-full opacity-50 animate-pulse ${
+                  CROPS[spinResult].rarity === 'Celestial' ? 'bg-sky-200' :
+                  CROPS[spinResult].rarity === 'Divine' ? 'bg-amber-100' :
+                  'bg-white'
+                }`} />
                 <RarityEffect rarity={CROPS[spinResult].rarity} className="w-32 h-32 mx-auto flex items-center justify-center bg-slate-50 rounded-[2rem] border-4 border-white shadow-xl relative z-10">
                   <span className="text-7xl">{CROPS[spinResult].icon}</span>
                 </RarityEffect>
@@ -2636,7 +2678,13 @@ export default function App() {
               <div className="mb-8">
                 <p className="text-2xl font-black text-slate-800 mb-1">{CROPS[spinResult].displayName} Seed</p>
                 <div className="inline-block px-4 py-1 bg-slate-100 rounded-full">
-                  <span className="text-xs font-black uppercase tracking-widest text-amber-600">{CROPS[spinResult].rarity}</span>
+                  <span className={`text-xs font-black uppercase tracking-widest ${
+                    CROPS[spinResult].rarity === 'Celestial' ? 'text-sky-600' :
+                    CROPS[spinResult].rarity === 'Divine' ? 'text-amber-600' :
+                    CROPS[spinResult].rarity === 'Secret' ? 'text-purple-600' :
+                    CROPS[spinResult].rarity === 'Legendary' ? 'text-yellow-600' :
+                    'text-slate-400'
+                  }`}>{CROPS[spinResult].rarity}</span>
                 </div>
               </div>
               

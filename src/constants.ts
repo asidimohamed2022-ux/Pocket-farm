@@ -42,6 +42,9 @@ export const CROPS: Record<CropType, CropData> = {
   'Heaven Fruit': { type: 'Heaven Fruit', displayName: 'Heaven Fruit', rarity: 'Divine', buyPrice: 30000, sellPrice: 90000, growTime: 19800, icon: '🍐', bonus: 'Angelic sweetness' },
   'Light Core': { type: 'Light Core', displayName: 'Light Core', rarity: 'Divine', buyPrice: 40000, sellPrice: 120000, growTime: 21600, icon: '✨', bonus: 'Pure radiance' },
   'Angelic Mango': { type: 'Angelic Mango', displayName: 'Angelic Mango', rarity: 'Divine', buyPrice: 50000, sellPrice: 150000, growTime: 23400, icon: '🥭', bonus: 'Divine flavor' },
+  'Guardian’s Eye': { type: 'Guardian’s Eye', displayName: 'Guardian’s Eye', rarity: 'Celestial', buyPrice: 1000000000, sellPrice: 5000000000, growTime: 25200, icon: '👁️', bonus: 'All-seeing presence' },
+  'Stardust Apple': { type: 'Stardust Apple', displayName: 'Stardust Apple', rarity: 'Celestial', buyPrice: 250000000, sellPrice: 1250000000, growTime: 21600, icon: '🍎', bonus: 'Star-touched sweetness' },
+  'Nebula Plum': { type: 'Nebula Plum', displayName: 'Nebula Plum', rarity: 'Celestial', buyPrice: 500000000, sellPrice: 2500000000, growTime: 25200, icon: '🫐', bonus: 'Deep space essence' },
 };
 
 export const ANIMALS: Record<AnimalType, AnimalData> = {
@@ -65,6 +68,7 @@ export const INFUSIONS: Record<InfusionType, { multiplier: number; icon: string;
   Darker: { multiplier: 4, icon: '🌑', color: 'text-slate-900' },
   Dragonic: { multiplier: 5, icon: '🐲', color: 'text-red-600' },
   Radioactive: { multiplier: 10, icon: '☢️', color: 'text-yellow-400' },
+  Divine: { multiplier: 20, icon: '🌟', color: 'text-amber-400' },
   Random: { multiplier: 1, icon: '?', color: 'text-slate-400' },
 };
 
@@ -75,6 +79,7 @@ export const TONIC_PRICES: Record<InfusionType, number> = {
   Darker: 800,
   Dragonic: 2000,
   Radioactive: 10000,
+  Divine: 100000,
   Random: 1000,
 };
 
@@ -85,6 +90,7 @@ export const TONICS: Record<InfusionType, { displayName: string; icon: string; b
   Darker: { displayName: 'Darker Tonic', icon: '🧪', buyPrice: TONIC_PRICES.Darker },
   Dragonic: { displayName: 'Dragonic Tonic', icon: '🧪', buyPrice: TONIC_PRICES.Dragonic },
   Radioactive: { displayName: 'Radioactive Tonic', icon: '🧪', buyPrice: TONIC_PRICES.Radioactive },
+  Divine: { displayName: 'Divine Tonic', icon: '🧪', buyPrice: TONIC_PRICES.Divine },
   Random: { displayName: 'Random Tonic', icon: '🧪', buyPrice: TONIC_PRICES.Random },
 };
 
@@ -98,4 +104,4 @@ export const MAX_CAGES = 8;
 export const AUTO_HARVEST_DURATION = 3600 * 1000; // 1 hour in ms
 export const PREMIUM_PACK_PRICE = 2.99; // 2.99 USD
 
-export const RARITY_ORDER: Rarity[] = ['NR', 'MID', 'Legendary', 'Myth', 'Secret', 'Divine'];
+export const RARITY_ORDER: Rarity[] = ['NR', 'MID', 'Legendary', 'Myth', 'Secret', 'Divine', 'Celestial'];
