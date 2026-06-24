@@ -15,14 +15,14 @@ export const CROPS: Record<CropType, CropData> = {
   Kiwi: { type: 'Kiwi', displayName: 'Kiwi', rarity: 'MID', buyPrice: 150, sellPrice: 350, growTime: 2700, icon: '🥝', bonus: 'Vitamin boost' },
 
   // Legendary
-  'Sky Ruller': { type: 'Sky Ruller', displayName: 'Sky Ruller', rarity: 'Legendary', buyPrice: 500, sellPrice: 1400, growTime: 5100, icon: '☁️', bonus: 'Chance for extra coins' },
+  'Sky Ruler': { type: 'Sky Ruler', displayName: 'Sky Ruler', rarity: 'Legendary', buyPrice: 500, sellPrice: 1400, growTime: 5100, icon: '☁️', bonus: 'Chance for extra coins' },
   'Moon Glower': { type: 'Moon Glower', displayName: 'Moon Glower', rarity: 'Legendary', buyPrice: 200, sellPrice: 550, growTime: 2700, icon: '🌙', bonus: 'Glows at night' },
-  'Sun Skaper': { type: 'Sun Skaper', displayName: 'Sun Skaper', rarity: 'Legendary', buyPrice: 200, sellPrice: 550, growTime: 2700, icon: '☀️', bonus: 'Daylight boost' },
+  'Sun Shaper': { type: 'Sun Shaper', displayName: 'Sun Shaper', rarity: 'Legendary', buyPrice: 200, sellPrice: 550, growTime: 2700, icon: '☀️', bonus: 'Daylight boost' },
   'Cozmic Apple': { type: 'Cozmic Apple', displayName: 'Cozmic Apple', rarity: 'Legendary', buyPrice: 900, sellPrice: 2000, growTime: 1800, icon: '🍎', bonus: 'Interstellar taste' },
 
   // Myth
-  'Banana Tails': { type: 'Banana Tails', displayName: 'Banana Tails', rarity: 'Myth', buyPrice: 1500, sellPrice: 5000, growTime: 2700, icon: '🍌', bonus: 'Pulsating energy' },
-  'Miniral Berys': { type: 'Miniral Berys', displayName: 'Miniral Berys', rarity: 'Myth', buyPrice: 2000, sellPrice: 7000, growTime: 3600, icon: '🫐', bonus: 'Rich in minerals' },
+  'Banana Tails': { type: 'Banana Tails', displayName: 'Banana Tails', rarity: 'Myth', buyPrice: 1500, sellPrice: 5000, growTime: 2700, icon: '/banana_tails.png', bonus: 'Pulsating energy' },
+  'Mineral Berries': { type: 'Mineral Berries', displayName: 'Mineral Berries', rarity: 'Myth', buyPrice: 2000, sellPrice: 7000, growTime: 3600, icon: '🫐', bonus: 'Rich in minerals' },
   'Trial Melon': { type: 'Trial Melon', displayName: 'Trial Melon', rarity: 'Myth', buyPrice: 5000, sellPrice: 10000, growTime: 5400, icon: '🍉', bonus: 'Ancient power' },
   'Crystal Strawberry': { type: 'Crystal Strawberry', displayName: 'Crystal Strawberry', rarity: 'Myth', buyPrice: 6000, sellPrice: 15000, growTime: 7200, icon: '🍓', bonus: 'Shiny and sweet' },
 

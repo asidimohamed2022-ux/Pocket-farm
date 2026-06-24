@@ -32,7 +32,12 @@ import {
   Instagram,
   Settings,
   Languages,
-  Wallet
+  Wallet,
+  Music,
+  Volume2,
+  Square,
+  Pause,
+  Upload
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CropType, ToolType, PlotState, GameState, Rarity, AnimalType, CageState, AnimalProductType, InfusionType } from './types';
@@ -57,6 +62,16 @@ import {
 } from './constants';
 
 // --- Constants & Helpers ---
+
+const MIGRATION_MAP: Record<string, string> = {
+  'Sky Ruller': 'Sky Ruler',
+  'Sun Skaper': 'Sun Shaper',
+  'Miniral Berys': 'Mineral Berries'
+};
+
+const migrateCropType = (type: string): CropType => {
+  return (MIGRATION_MAP[type] as CropType) || (type as CropType);
+};
 
 const getInfusedCropKey = (type: CropType, infusions?: InfusionType[], isFavorite: boolean = false) => {
   const infusionsPart = infusions && infusions.length > 0 ? [...infusions].sort().join(',') : '';
@@ -120,14 +135,56 @@ const INITIAL_STATE_BASE: Omit<GameState, 'lastSaved'> = {
   hasCompletedTutorial: false,
   totalMoneyEarned: 0,
   totalCropsHarvested: 0,
-  language: 'en'
+  language: 'en',
+  musicVolume: 0.5,
+  isMusicPlaying: false,
+  customMusicName: null,
+  customMusicData: null,
+  musicKey: 0
 };
 
 const formatNumberShort = (num: number) => {
-  if (num >= 1000000000) return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';
-  if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-  if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
-  return num.toLocaleString();
+  if (num === 0) return '0';
+  const absNum = Math.abs(num);
+  if (absNum < 1000) return num.toLocaleString();
+
+  const suffixes = [
+    '', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc',
+    'Ud', 'Dd', 'Td', 'Qad', 'Qid', 'Sxd', 'Spd', 'Ocd', 'Nod', 'Vg',
+    'Uvg', 'Dvg', 'Tvg', 'Qavg', 'Qivg', 'Sxvg', 'Spvg', 'Ocvg', 'Novg', 'Tg'
+  ];
+
+  const exponent = Math.floor(Math.log10(absNum) / 3);
+  const suffixIndex = Math.min(exponent, suffixes.length - 1);
+  
+  const shortValue = num / Math.pow(10, suffixIndex * 3);
+  
+  // Handle potential scientific notation from very large shortValue
+  let formatted = shortValue.toFixed(2);
+  if (formatted.includes('e')) {
+    const parts = formatted.split('e');
+    const base = parts[0];
+    const power = parseInt(parts[1]);
+    if (power > 0) {
+      const dotIndex = base.indexOf('.');
+      let cleanBase = base.replace('.', '');
+      if (dotIndex === -1) {
+        formatted = cleanBase + '0'.repeat(power);
+      } else {
+        const afterDot = base.length - dotIndex - 1;
+        if (power >= afterDot) {
+          formatted = cleanBase + '0'.repeat(power - afterDot);
+        } else {
+          formatted = cleanBase.slice(0, dotIndex + power) + '.' + cleanBase.slice(dotIndex + power);
+        }
+      }
+    }
+  }
+  
+  // Remove trailing zeros and unnecessary decimal point
+  formatted = formatted.replace(/\.?0+$/, '');
+  
+  return formatted + suffixes[suffixIndex];
 };
 
 const formatTimeShort = (seconds: number) => {
@@ -190,6 +247,68 @@ const sortCrops = (cropTypes: string[]) => {
     if (rarityDiff !== 0) return rarityDiff;
     return cropA.buyPrice - cropB.buyPrice;
   });
+};
+
+const IconRenderer = ({ 
+  icon, 
+  className = "", 
+  containerClassName = "",
+  fallback = "🍌"
+}: { 
+  icon: string; 
+  className?: string; 
+  containerClassName?: string;
+  fallback?: string;
+}) => {
+  const [hasError, setHasError] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Reset states when icon changes
+  useEffect(() => {
+    setHasError(false);
+    setIsLoaded(false);
+  }, [icon]);
+
+  const isImageRef = (icon.startsWith('/') || icon.startsWith('http') || icon.includes('.'));
+  const isBananaTails = icon === '/banana_tails.png' || icon.toLowerCase().includes('banana');
+  const showImage = isImageRef && !hasError;
+  
+  if (showImage) {
+    return (
+      <div className={`flex items-center justify-center overflow-hidden pointer-events-none relative ${containerClassName}`}>
+        {/* Loading/Fallback placeholder while image loads */}
+        {!isLoaded && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className={`${className} flex items-center justify-center leading-none select-none opacity-40`}>
+              {isBananaTails ? '🍌' : fallback}
+            </span>
+          </div>
+        )}
+        <img
+          src={icon}
+          alt=""
+          className={`w-full h-full object-contain pointer-events-none transition-opacity duration-200 ${isLoaded ? 'opacity-100' : 'opacity-0'} ${className}`}
+          referrerPolicy="no-referrer"
+          onLoad={() => setIsLoaded(true)}
+          onError={() => {
+            console.warn(`Icon failed to load: ${icon}`);
+            setHasError(true);
+          }}
+        />
+      </div>
+    );
+  }
+  
+  // If it's not an image or failed to load, render text/emoji
+  const displayIcon = isBananaTails ? '🍌' : fallback;
+  
+  return (
+    <div className={`flex items-center justify-center ${containerClassName}`}>
+      <span className={`${className} flex items-center justify-center leading-none select-none`}>
+        {hasError ? displayIcon : icon}
+      </span>
+    </div>
+  );
 };
 
 // --- Components ---
@@ -296,9 +415,13 @@ const Plot = memo(({
                 scale: plot.isReady ? 1.2 : 0.5 + (progress / 200),
                 opacity: 1 
               }}
-              className="text-4xl filter drop-shadow-md block p-2"
+              className="filter drop-shadow-md block p-2"
             >
-              {cropData?.icon}
+              <IconRenderer 
+                icon={cropData?.icon || '🌱'} 
+                className="w-full h-full text-4xl" 
+                containerClassName="w-16 h-16" 
+              />
             </motion.span>
           </RarityEffect>
           
@@ -355,6 +478,78 @@ const Plot = memo(({
   );
 });
 
+interface MusicManagerProps {
+  musicVolume: number;
+  isMusicPlaying: boolean;
+  customMusicData: string | null;
+  musicKey: number;
+}
+
+const MusicManager = ({ 
+  musicVolume, 
+  isMusicPlaying, 
+  customMusicData,
+  musicKey
+}: MusicManagerProps) => {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+      audioRef.current.loop = true;
+    }
+
+    const audio = audioRef.current;
+
+    if (customMusicData) {
+      // If we have custom music, try to use it
+      if (audio.src !== customMusicData) {
+        audio.src = customMusicData;
+      }
+    } else {
+      // Default game music if no custom one is provided
+      // Since I don't have a default audio file, I'll use a placeholder or silent if not provided
+      // For this task, the focus is on the custom music system
+      audio.src = ""; 
+    }
+
+    return () => {
+      audio.pause();
+      audio.src = "";
+    };
+  }, [customMusicData]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = musicVolume;
+    }
+  }, [musicVolume]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isMusicPlaying && audio.src) {
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.warn("Autoplay was prevented. User interaction required.", error);
+        });
+      }
+    } else {
+      audio.pause();
+    }
+  }, [isMusicPlaying, customMusicData]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+    }
+  }, [musicKey]);
+
+  return null;
+};
+
 export default function App() {
   const [screen, setScreen] = useState<'menu' | 'farm'>('menu');
   const [gameState, setGameState] = useState<GameState>({
@@ -404,6 +599,36 @@ export default function App() {
     setScreen('menu');
   };
 
+  const handleMusicUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const data = event.target?.result as string;
+        try {
+          setGameState(prev => ({
+            ...prev,
+            customMusicName: file.name,
+            customMusicData: data,
+            isMusicPlaying: true
+          }));
+        } catch (err) {
+          alert("File is too large to save locally. Please try a smaller music file (under 3MB).");
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeCustomMusic = () => {
+    setGameState(prev => ({
+      ...prev,
+      customMusicName: null,
+      customMusicData: null,
+      isMusicPlaying: false
+    }));
+  };
+
   // --- Persistence & Notifications ---
   
   // Load game state
@@ -420,6 +645,41 @@ export default function App() {
         if (!parsed.cages) parsed.cages = [];
         if (!parsed.plots) parsed.plots = [];
         if (!parsed.language) parsed.language = 'en';
+        if (parsed.musicVolume === undefined) parsed.musicVolume = 0.5;
+        if (parsed.isMusicPlaying === undefined) parsed.isMusicPlaying = false;
+        if (parsed.customMusicName === undefined) parsed.customMusicName = null;
+        if (parsed.customMusicData === undefined) parsed.customMusicData = null;
+
+        // Migrate legacy crop names in seedInventory
+        const migratedSeedInventory: Partial<Record<CropType, number>> = {};
+        Object.keys(parsed.seedInventory).forEach(key => {
+          const migratedType = migrateCropType(key);
+          migratedSeedInventory[migratedType] = (migratedSeedInventory[migratedType] || 0) + (parsed.seedInventory[key as CropType] || 0);
+        });
+        parsed.seedInventory = migratedSeedInventory;
+
+        // Migrate legacy crop names in inventory (keys are composite)
+        const migratedInventory: Record<string, number> = {};
+        Object.keys(parsed.inventory).forEach(key => {
+          const { type, infusions, isFavorite } = parseInfusedCropKey(key);
+          const migratedType = migrateCropType(type);
+          const migratedKey = getInfusedCropKey(migratedType, infusions, isFavorite);
+          migratedInventory[migratedKey] = (migratedInventory[migratedKey] || 0) + (parsed.inventory[key] || 0);
+        });
+        parsed.inventory = migratedInventory;
+
+        // Migrate selectedSeed
+        if (parsed.selectedSeed) {
+          parsed.selectedSeed = migrateCropType(parsed.selectedSeed);
+        }
+
+        // Migrate plots
+        parsed.plots = (parsed.plots || []).map(plot => {
+          if (plot.crop) {
+            return { ...plot, crop: migrateCropType(plot.crop) };
+          }
+          return plot;
+        });
         
         const now = Date.now();
         let readyCount = 0;
@@ -1111,37 +1371,54 @@ export default function App() {
 
   // --- Render Helpers ---
 
-  if (screen === 'menu') {
-    return (
-      <div className="min-h-screen bg-green-100 flex flex-col items-center justify-center p-6 text-center">
-        <motion.div 
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="mb-12"
-        >
-          <div className="bg-white p-6 rounded-3xl shadow-xl border-4 border-green-600 mb-4 inline-block">
-            <Sprout size={80} className="text-green-600" />
-          </div>
-          <h1 className="text-5xl font-black text-green-800 tracking-tight">Pocket Farm</h1>
-          <p className="text-green-700 font-medium mt-2">{t('subtitle')}</p>
-        </motion.div>
-
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setScreen('farm')}
-          className="bg-green-600 text-white px-12 py-4 rounded-full text-2xl font-bold shadow-lg flex items-center gap-3"
-        >
-          <Play fill="currentColor" /> {t('play')}
-        </motion.button>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-amber-50 flex flex-col max-w-md mx-auto relative overflow-hidden font-sans text-slate-800">
-      {/* Header */}
-      <header className="bg-white p-4 shadow-sm flex items-center justify-between sticky top-0 z-20" dir={gameState.language === 'ar' || gameState.language === 'ur' ? 'rtl' : 'ltr'}>
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-green-100 selection:text-green-700">
+      <MusicManager 
+        musicVolume={gameState.musicVolume || 0.5} 
+        isMusicPlaying={gameState.isMusicPlaying || false} 
+        customMusicData={gameState.customMusicData || null} 
+        musicKey={gameState.musicKey || 0}
+      />
+      <AnimatePresence mode="wait">
+        {screen === 'menu' ? (
+          <motion.div 
+            key="menu-screen"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="min-h-screen bg-green-100 flex flex-col items-center justify-center p-6 text-center"
+          >
+            <motion.div 
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="mb-12"
+            >
+              <div className="bg-white p-6 rounded-3xl shadow-xl border-4 border-green-600 mb-4 inline-block">
+                <Sprout size={80} className="text-green-600" />
+              </div>
+              <h1 className="text-5xl font-black text-green-800 tracking-tight">Pocket Farm</h1>
+              <p className="text-green-700 font-medium mt-2">{t('subtitle')}</p>
+            </motion.div>
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setScreen('farm')}
+              className="bg-green-600 text-white px-12 py-4 rounded-full text-2xl font-bold shadow-lg flex items-center gap-3"
+            >
+              <Play fill="currentColor" /> {t('play')}
+            </motion.button>
+          </motion.div>
+        ) : (
+          <motion.div 
+            key="farm-screen"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="min-h-screen bg-amber-50 flex flex-col max-w-md mx-auto relative overflow-hidden font-sans text-slate-800"
+          >
+            {/* Header */}
+            <header className="bg-white p-4 shadow-sm flex items-center justify-between sticky top-0 z-20" dir={gameState.language === 'ar' || gameState.language === 'ur' ? 'rtl' : 'ltr'}>
         <div className="flex items-center gap-2 bg-amber-100 px-3 py-1.5 rounded-full border border-amber-200 shrink-0">
           <Coins className="text-amber-600" size={20} />
           {gameState.money >= 1000000 ? (
@@ -1326,6 +1603,9 @@ export default function App() {
           </button>
         </div>
       </div>
+    </motion.div>
+  )}
+</AnimatePresence>
 
       {/* Modals */}
       <AnimatePresence>
@@ -1438,7 +1718,11 @@ export default function App() {
                       <div className="flex items-center gap-3">
                         <div className="relative">
                           <RarityEffect rarity={crop.rarity} className="p-1">
-                            <span className="text-3xl">{crop.icon}</span>
+                            <IconRenderer 
+                              icon={crop.icon} 
+                              className="w-full h-full text-3xl" 
+                              containerClassName="w-12 h-12" 
+                            />
                           </RarityEffect>
                         </div>
                         <div className="text-left">
@@ -1597,7 +1881,11 @@ export default function App() {
                             >
                               <div className="flex items-center gap-4">
                                 <RarityEffect rarity={crop.rarity} className="p-2">
-                                  <span className="text-4xl">{crop.icon}</span>
+                                  <IconRenderer 
+                                    icon={crop.icon} 
+                                    className="w-full h-full text-4xl" 
+                                    containerClassName="w-16 h-16"
+                                  />
                                 </RarityEffect>
                                 <div>
                                   <div className="flex items-center gap-2">
@@ -1724,14 +2012,14 @@ export default function App() {
               <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Zap size={32} className="fill-blue-600" />
               </div>
-              <h4 className="text-xl font-black mb-2">Auto-Harvest</h4>
+              <h4 className="text-xl font-black mb-2">{t('auto_harvest')}</h4>
               <p className="text-sm text-slate-500 mb-6 font-medium">
-                Tired of clicking? Activate Auto-Harvest to automatically collect all ready crops for 1 hour!
+                {t('t_auto_harvest')}
               </p>
               
               {gameState.permanentAutoHarvest ? (
                 <div className="p-4 bg-green-100 text-green-700 rounded-2xl font-bold text-sm mb-4">
-                  ✨ Permanent Auto-Harvest Active!
+                  ✨ {t('perm_auto_active')}
                 </div>
               ) : (
                 <button 
@@ -1741,7 +2029,7 @@ export default function App() {
                   }}
                   className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg hover:scale-105 transition-transform flex items-center justify-center gap-2"
                 >
-                  Watch Ad (1h Boost)
+                  {t('watch_ad')}
                 </button>
               )}
               
@@ -1811,7 +2099,7 @@ export default function App() {
               </div>
               
               <p className="text-[10px] text-slate-400 text-center font-medium">
-                Support the developer and unlock exclusive features!
+                {t('support_dev_unlock')}
               </p>
             </motion.div>
           </motion.div>
@@ -1913,7 +2201,11 @@ export default function App() {
                       <div className="flex items-center gap-4">
                         <div className="relative">
                           <RarityEffect rarity={crop.rarity} className="p-2">
-                            <span className="text-4xl">{crop.icon}</span>
+                            <IconRenderer 
+                              icon={crop.icon} 
+                              className="w-full h-full text-4xl" 
+                              containerClassName="w-16 h-16"
+                            />
                           </RarityEffect>
                           <button 
                             onClick={(e) => {
@@ -1962,7 +2254,7 @@ export default function App() {
                             )}
                             {multiplier > 1 && (
                               <span className="text-[10px] font-black bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">
-                                x{multiplier}
+                                x{formatNumberShort(multiplier)}
                               </span>
                             )}
                           </div>
@@ -2086,7 +2378,7 @@ export default function App() {
                   (inventoryTab === 'animals' && Object.values(gameState.animalProductInventory).every(c => !c || (typeof c === 'number' && c <= 0))) ||
                   (inventoryTab === 'tonics' && Object.values(gameState.tonicInventory).every(c => !c || (typeof c === 'number' && c <= 0)))) && (
                   <div key="empty-inventory-msg" className="py-12 text-center text-slate-400 font-medium">
-                    This section is empty!
+                    {t('empty_inventory_msg')}
                   </div>
                 )}
               </div>
@@ -2114,9 +2406,9 @@ export default function App() {
               <div className="w-16 h-16 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <ShoppingBasket size={32} />
               </div>
-              <h4 className="text-xl font-black mb-2">Sell Everything?</h4>
+              <h4 className="text-xl font-black mb-2">{t('sell_everything')}</h4>
               <p className="text-sm text-slate-500 mb-6 font-medium">
-                Are you sure you want to sell all your crops and animal products?
+                {t('sell_everything_desc')}
               </p>
               
               <div className="space-y-3">
@@ -2124,7 +2416,7 @@ export default function App() {
                   onClick={sellAll}
                   className="w-full py-4 bg-green-600 text-white rounded-2xl font-black shadow-lg hover:scale-105 transition-transform"
                 >
-                  Yes, Sell All
+                  {t('yes_sell_all')}
                 </button>
                 <button 
                   onClick={() => setShowSellAllConfirm(false)}
@@ -2291,7 +2583,7 @@ export default function App() {
               className="bg-white w-full max-w-xs rounded-[2rem] p-6 shadow-2xl"
               onClick={e => e.stopPropagation()}
             >
-              <h3 className="text-xl font-black text-slate-800 mb-4 text-center">Place Animal</h3>
+              <h3 className="text-xl font-black text-slate-800 mb-4 text-center">{t('place_animal')}</h3>
               <div className="grid grid-cols-1 gap-3 max-h-[50vh] overflow-y-auto pr-2">
                 {(Object.keys(ANIMALS) as AnimalType[]).map(type => {
                   const count = gameState.animalInventory[type] || 0;
@@ -2316,7 +2608,7 @@ export default function App() {
                         <span className="text-3xl">{animal.icon}</span>
                         <div className="text-left">
                           <p className="font-bold text-slate-800">{type}</p>
-                          <p className="text-xs text-slate-500">{formatNumberShort(count)} in inventory</p>
+                          <p className="text-xs text-slate-500">{formatNumberShort(count)} {t('owned')}</p>
                         </div>
                       </div>
                       {canPlace && <Check className="text-purple-600" size={20} />}
@@ -2325,7 +2617,7 @@ export default function App() {
                 })}
                 {Object.values(gameState.animalInventory).every(c => !c || (typeof c === 'number' && c <= 0)) && (
                   <div key="empty-animal-inventory-msg" className="py-8 text-center text-slate-400 font-medium">
-                    No animals in inventory!
+                    {t('animal_inventory_empty')}
                   </div>
                 )}
               </div>
@@ -2359,8 +2651,8 @@ export default function App() {
               <div className="w-20 h-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-amber-50">
                 <User size={40} />
               </div>
-              <h4 className="text-2xl font-black mb-1">Roy the Trader</h4>
-              <p className="text-xs text-slate-400 mb-6 font-bold uppercase tracking-widest">"Need a lucky spin?"</p>
+              <h4 className="text-2xl font-black mb-1">{t('roy_trader')}</h4>
+              <p className="text-xs text-slate-400 mb-6 font-bold uppercase tracking-widest">"{t('need_lucky_spin')}"</p>
               
               <div className="space-y-3">
                 <button 
@@ -2369,7 +2661,7 @@ export default function App() {
                   className="w-full py-4 bg-amber-500 text-white rounded-2xl font-black shadow-lg shadow-amber-200 flex items-center justify-center gap-3 hover:bg-amber-600 transition-all disabled:opacity-50 disabled:shadow-none"
                 >
                   <Coins size={20} />
-                  <span>Spin (£250)</span>
+                  <span>{t('spin')} (£250)</span>
                 </button>
                 
                 <button 
@@ -2409,7 +2701,7 @@ export default function App() {
             >
               <div className="flex justify-between items-center mb-6 shrink-0">
                 <h4 className="text-2xl font-black text-slate-800">
-                  {helpTab === 'main' ? 'How to Play' : helpTab === 'fruits' ? 'Fruit Values' : 'Infusions'}
+                  {helpTab === 'main' ? t('how_to_play') : helpTab === 'fruits' ? t('fruit_values') : t('infusions')}
                 </h4>
                 <button onClick={() => {
                   setShowRoyHelp(false);
@@ -2427,7 +2719,7 @@ export default function App() {
                     helpTab === 'main' ? 'bg-green-600 text-white shadow-md' : 'bg-slate-100 text-slate-400'
                   }`}
                 >
-                  Main
+                  {t('main')}
                 </button>
                 <button 
                   onClick={() => setHelpTab('fruits')}
@@ -2435,7 +2727,7 @@ export default function App() {
                     helpTab === 'fruits' ? 'bg-green-600 text-white shadow-md' : 'bg-slate-100 text-slate-400'
                   }`}
                 >
-                  Fruits
+                  {t('fruits')}
                 </button>
                 <button 
                   onClick={() => setHelpTab('infusions')}
@@ -2443,7 +2735,7 @@ export default function App() {
                     helpTab === 'infusions' ? 'bg-green-600 text-white shadow-md' : 'bg-slate-100 text-slate-400'
                   }`}
                 >
-                  Infusions
+                  {t('infusions')}
                 </button>
               </div>
               
@@ -2571,7 +2863,11 @@ export default function App() {
                       return (
                         <div key={`help-fruit-${type}`} className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100">
                           <div className="flex items-center gap-3">
-                            <span className="text-2xl">{crop.icon}</span>
+                            <IconRenderer 
+                              icon={crop.icon} 
+                              className="w-full h-full text-2xl" 
+                              containerClassName="w-10 h-10"
+                            />
                             <div>
                               <p className="font-bold text-slate-800 text-sm">{crop.displayName}</p>
                               <p className={`text-[10px] font-bold uppercase tracking-widest ${
@@ -2618,7 +2914,7 @@ export default function App() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <span className="text-lg font-black text-slate-800">×{data?.multiplier || 1}</span>
+                          <span className="text-lg font-black text-slate-800">×{formatNumberShort(data?.multiplier || 1)}</span>
                         </div>
                       </div>
                     ))}
@@ -2662,7 +2958,7 @@ export default function App() {
                 CROPS[spinResult].rarity === 'Secret' ? 'from-purple-600 via-slate-800 to-purple-600' :
                 'from-green-400 via-emerald-300 to-green-400'
               }`} />
-              <h4 className="text-3xl font-black mb-6 text-slate-800">You Won!</h4>
+              <h4 className="text-3xl font-black mb-6 text-slate-800">{t('you_won')}</h4>
               
               <div className="mb-6 relative">
                 <div className={`absolute inset-0 blur-3xl rounded-full opacity-50 animate-pulse ${
@@ -2671,12 +2967,16 @@ export default function App() {
                   'bg-white'
                 }`} />
                 <RarityEffect rarity={CROPS[spinResult].rarity} className="w-32 h-32 mx-auto flex items-center justify-center bg-slate-50 rounded-[2rem] border-4 border-white shadow-xl relative z-10">
-                  <span className="text-7xl">{CROPS[spinResult].icon}</span>
+                  <IconRenderer 
+                    icon={CROPS[spinResult].icon} 
+                    className="w-full h-full text-7xl" 
+                    containerClassName="w-24 h-24"
+                  />
                 </RarityEffect>
               </div>
               
               <div className="mb-8">
-                <p className="text-2xl font-black text-slate-800 mb-1">{CROPS[spinResult].displayName} Seed</p>
+                <p className="text-2xl font-black text-slate-800 mb-1">{CROPS[spinResult].displayName} {t('seed')}</p>
                 <div className="inline-block px-4 py-1 bg-slate-100 rounded-full">
                   <span className={`text-xs font-black uppercase tracking-widest ${
                     CROPS[spinResult].rarity === 'Celestial' ? 'text-sky-600' :
@@ -2720,8 +3020,8 @@ export default function App() {
                 <Wallet size={32} />
               </div>
               <h4 className="text-xl font-black text-slate-800 mb-2">Total Balance</h4>
-              <p className="text-3xl font-black text-amber-600 mb-6">
-                £{gameState.money.toLocaleString()}
+              <p className="text-3xl font-black text-amber-600 mb-6 scale-75 origin-center break-all">
+                £{Math.floor(gameState.money).toLocaleString('en-GB', { useGrouping: true, maximumFractionDigits: 0 }).replace(/e\+?(\d+)/g, (_, p) => "0".repeat(Number(p)))}
               </p>
               <button 
                 onClick={() => setShowFullMoney(false)}
@@ -2780,6 +3080,83 @@ export default function App() {
                         {LANGUAGES[code]}
                       </button>
                     ))}
+                  </div>
+                </div>
+
+                {/* Music Section */}
+                <div className="pt-6 border-t border-slate-100">
+                  <h5 className="font-black text-slate-400 uppercase text-[10px] tracking-widest mb-4 flex items-center gap-2">
+                    <Music size={14} />
+                    {t('music')}
+                  </h5>
+                  
+                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex-1 overflow-hidden">
+                        <p className="text-xs font-bold text-slate-800 truncate">
+                          {gameState.customMusicName || t('no_music_selected')}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {gameState.customMusicData && (
+                          <>
+                            <button 
+                              onClick={() => setGameState(prev => ({ ...prev, isMusicPlaying: !prev.isMusicPlaying }))}
+                              className={`p-2 rounded-full shadow-sm transition-all ${
+                                gameState.isMusicPlaying ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600'
+                              }`}
+                              title={gameState.isMusicPlaying ? t('pause') : t('play')}
+                            >
+                              {gameState.isMusicPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
+                            </button>
+                            <button 
+                              onClick={() => setGameState(prev => ({ ...prev, isMusicPlaying: false, musicKey: (prev.musicKey || 0) + 1 }))}
+                              className="p-2 bg-slate-100 text-slate-600 rounded-full shadow-sm hover:bg-slate-200 transition-colors"
+                              title={t('stop')}
+                            >
+                              <Square size={16} fill="currentColor" />
+                            </button>
+                            <button 
+                              onClick={removeCustomMusic}
+                              className="p-2 bg-red-100 text-red-600 rounded-full shadow-sm hover:bg-red-200 transition-colors"
+                              title={t('remove_music')}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </>
+                        )}
+                        {!gameState.customMusicData && (
+                          <label className="p-2 bg-blue-600 text-white rounded-full shadow-lg cursor-pointer hover:bg-blue-700 transition-colors">
+                            <Upload size={16} />
+                            <input 
+                              type="file" 
+                              accept="audio/mp3,audio/wav,audio/ogg" 
+                              className="hidden" 
+                              onChange={handleMusicUpload} 
+                            />
+                          </label>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <span>{t('volume')}</span>
+                        <span>{Math.round((gameState.musicVolume || 0) * 100)}%</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Volume2 size={16} className="text-slate-400" />
+                        <input 
+                          type="range" 
+                          min="0" 
+                          max="1" 
+                          step="0.01" 
+                          value={gameState.musicVolume || 0.5}
+                          onChange={(e) => setGameState(prev => ({ ...prev, musicVolume: parseFloat(e.target.value) }))}
+                          className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
 

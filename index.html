@@ -3,20 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pocket Farm</title>
-
-    <!-- PWA & Ads Connections -->
-    <link rel="manifest" href="manifest.json">
-    <script src="ads.js"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
-      }
-    </script>
+    <title>My Google AI Studio App</title>
   </head>
   <body>
     <div id="root"></div>
-    <!-- Fixed path: removed the first slash -->
-<script type="module" src="/assets/index.js"></script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
+

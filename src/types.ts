@@ -11,8 +11,8 @@ export interface InfusedCrop {
 export type CropType = 
   | 'Carrot' | 'Orange' | 'Wheat' | 'Corn' | 'Dandelion'
   | 'Pumpkin' | 'Cactus' | 'Mango' | 'Kiwi'
-  | 'Sky Ruller' | 'Moon Glower' | 'Sun Skaper' | 'Cozmic Apple'
-  | 'Banana Tails' | 'Miniral Berys' | 'Trial Melon' | 'Crystal Strawberry' | 'Void Pear' | 'Prism Fruit'
+  | 'Sky Ruler' | 'Moon Glower' | 'Sun Shaper' | 'Cozmic Apple'
+  | 'Banana Tails' | 'Mineral Berries' | 'Trial Melon' | 'Crystal Strawberry' | 'Void Pear' | 'Prism Fruit'
   | 'Dragon Tooth' | 'Demonic Core' | 'God Apple' | 'Celestial Berry' | 'Heaven Fruit' | 'Light Core' | 'Angelic Mango' | 'Guardian’s Eye' | 'Stardust Apple' | 'Nebula Plum';
 
 export interface CropData {
@@ -90,4 +90,9 @@ export interface GameState {
   totalCropsHarvested: number;
   lastSaved: number;
   language: LanguageCode;
+  musicVolume?: number;
+  isMusicPlaying?: boolean;
+  customMusicName?: string | null;
+  customMusicData?: string | null; // Base64
+  musicKey?: number;
 }
