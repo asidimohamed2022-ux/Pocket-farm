@@ -8,7 +8,7 @@
 
 /* Page background */
 .dark .bg-amber-50 {
-  background-color: #0f172a !important; /* slate-900 */
+  background-color: #1e1202 !important; /* deep dark amber */
 }
 
 /* Modals, panels, bottom bar, header card */
@@ -25,6 +25,52 @@
 .dark .bg-slate-100 {
   background-color: #334155 !important; /* slate-700 */
   color: #cbd5e1 !important;
+}
+
+/* Additional thematic background overrides for dark mode */
+.dark .bg-purple-50 {
+  background-color: #1e1135 !important; /* deep dark purple */
+}
+.dark .bg-blue-50 {
+  background-color: #0c192c !important; /* deep dark blue */
+}
+.dark .bg-green-50 {
+  background-color: #062112 !important; /* deep dark green */
+}
+.dark .bg-sky-50 {
+  background-color: #081f2d !important; /* deep dark sky blue */
+}
+.dark .bg-indigo-50 {
+  background-color: #11132c !important; /* deep dark indigo */
+}
+.dark .bg-pink-50 {
+  background-color: #240a15 !important; /* deep dark pink */
+}
+
+/* Additional 100-level background overrides for dark mode badges/elements */
+.dark .bg-slate-100 {
+  background-color: #1e293b !important;
+}
+.dark .bg-purple-100 {
+  background-color: #3b0764 !important; /* purple-950 */
+}
+.dark .bg-blue-100 {
+  background-color: #172554 !important; /* blue-950 */
+}
+.dark .bg-green-100 {
+  background-color: #052e16 !important; /* green-950 */
+}
+.dark .bg-amber-100 {
+  background-color: #451a03 !important; /* amber-950 */
+}
+.dark .bg-sky-100 {
+  background-color: #0c4a6e !important; /* sky-950 */
+}
+.dark .bg-indigo-100 {
+  background-color: #1e1b4b !important; /* indigo-950 */
+}
+.dark .bg-pink-100 {
+  background-color: #500724 !important; /* pink-950 */
 }
 
 /* Inputs, drop-downs and input ranges */
@@ -75,8 +121,47 @@
 /* Borders */
 .dark .border-slate-50,
 .dark .border-slate-100,
-.dark .border-slate-200 {
+.dark .border-slate-200,
+.dark .border-slate-300 {
   border-color: #334155 !important; /* slate-700 */
+}
+.dark .border-purple-50,
+.dark .border-purple-100,
+.dark .border-purple-200,
+.dark .border-purple-300 {
+  border-color: #581c87 !important; /* purple-900 */
+}
+.dark .border-blue-50,
+.dark .border-blue-100,
+.dark .border-blue-200,
+.dark .border-blue-300 {
+  border-color: #1e3a8a !important; /* blue-900 */
+}
+.dark .border-green-50,
+.dark .border-green-100,
+.dark .border-green-200,
+.dark .border-green-300 {
+  border-color: #14532d !important; /* green-900 */
+}
+.dark .border-amber-50,
+.dark .border-amber-100,
+.dark .border-amber-200,
+.dark .border-amber-300 {
+  border-color: #78350f !important; /* amber-900 */
+}
+.dark .border-sky-50,
+.dark .border-sky-100,
+.dark .border-sky-200,
+.dark .border-sky-300 {
+  border-color: #0369a1 !important; /* sky-700 */
+}
+.dark .border-indigo-50,
+.dark .border-indigo-100 {
+  border-color: #312e81 !important; /* indigo-900 */
+}
+.dark .border-pink-50,
+.dark .border-pink-100 {
+  border-color: #831843 !important; /* pink-900 */
 }
 
 /* Tabs and interactive lists */

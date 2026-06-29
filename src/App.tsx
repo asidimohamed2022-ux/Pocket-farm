@@ -3143,7 +3143,7 @@ export default function App() {
                       }`}
                     >
                       <Sun size={14} />
-                      Light
+                      {t('light')}
                     </button>
                     <button
                       onClick={() => setGameState(prev => ({ ...prev, darkMode: true }))}
@@ -3154,7 +3154,7 @@ export default function App() {
                       }`}
                     >
                       <Moon size={14} />
-                      Dark
+                      {t('dark')}
                     </button>
                   </div>
                 </div>

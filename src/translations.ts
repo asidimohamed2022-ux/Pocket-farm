@@ -129,7 +129,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     plot: "Plot",
     auto: "Auto",
     awesome: "Awesome!",
-    dark_mode: "Dark Mode"
+    dark_mode: "Dark Mode",
+    light: "Light",
+    dark: "Dark"
   },
   ar: {
     money: "المال",
@@ -232,7 +234,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     plot: "قطعة أرض",
     auto: "تلقائي",
     awesome: "رائع!",
-    dark_mode: "الوضع الداكن"
+    dark_mode: "الوضع الداكن",
+    light: "فاتح",
+    dark: "داكن"
   },
   fr: {
     money: "Argent",
@@ -335,7 +339,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     plot: "Parcelle",
     auto: "Auto",
     awesome: "Génial !",
-    dark_mode: "Mode sombre"
+    dark_mode: "Mode sombre",
+    light: "Clair",
+    dark: "Sombre"
   },
   de: {
     money: "Geld",
@@ -438,7 +444,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     plot: "Parzelle",
     auto: "Auto",
     awesome: "Großartig!",
-    dark_mode: "Dunkelmodus"
+    dark_mode: "Dunkelmodus",
+    light: "Hell",
+    dark: "Dunkel"
   },
   es: {
     money: "Dinero",
@@ -541,7 +549,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     plot: "Parcela",
     auto: "Auto",
     awesome: "¡Genial!",
-    dark_mode: "Modo oscuro"
+    dark_mode: "Modo oscuro",
+    light: "Claro",
+    dark: "Oscuro"
   },
   pt: {
     money: "Dinheiro",
@@ -644,7 +654,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     plot: "Parcela",
     auto: "Auto",
     awesome: "Incrível!",
-    dark_mode: "Modo escuro"
+    dark_mode: "Modo escuro",
+    light: "Claro",
+    dark: "Escuro"
   },
   it: {
     money: "Soldi",
@@ -747,7 +759,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     plot: "Appezzamento",
     auto: "Auto",
     awesome: "Fantastico!",
-    dark_mode: "Modalità scura"
+    dark_mode: "Modalità scura",
+    light: "Chiaro",
+    dark: "Scuro"
   },
   nl: {
     money: "Geld",
@@ -850,7 +864,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     plot: "Kavel",
     auto: "Auto",
     awesome: "Geweldig!",
-    dark_mode: "Donkere modus"
+    dark_mode: "Donkere modus",
+    light: "Licht",
+    dark: "Donker"
   },
   ru: {
     money: "Деньги",
@@ -953,7 +969,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     plot: "Участок",
     auto: "Авто",
     awesome: "Отлично!",
-    dark_mode: "Тёмный режим"
+    dark_mode: "Тёмный режим",
+    light: "Светлый",
+    dark: "Тёмный"
   },
   tr: {
     money: "Para",
@@ -1056,7 +1074,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     plot: "Arsa",
     auto: "Oto",
     awesome: "Harika!",
-    dark_mode: "Karanlık Mod"
+    dark_mode: "Karanlık Mod",
+    light: "Açık",
+    dark: "Karanlık"
   },
   hi: {
     money: "पैसा",
@@ -1159,7 +1179,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     plot: "भूखंड",
     auto: "ऑटो",
     awesome: "बहुत बढ़िया!",
-    dark_mode: "डार्क मोड"
+    dark_mode: "डार्क मोड",
+    light: "लाइट",
+    dark: "डार्क"
   },
   bn: {
     money: "টাকা",
@@ -1262,7 +1284,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     plot: "জমি",
     auto: "অটো",
     awesome: "চমৎকার!",
-    dark_mode: "ডার্ক মোড"
+    dark_mode: "ডার্ক মোড",
+    light: "লাইট",
+    dark: "ডার্ক"
   },
   ur: {
     money: "رقم",
@@ -1365,7 +1389,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     plot: "پلاٹ",
     auto: "خودکار",
     awesome: "بہترین!",
-    dark_mode: "ڈارک موڈ"
+    dark_mode: "ڈارک موڈ",
+    light: "لائٹ",
+    dark: "ڈارک"
   },
   ko: {
     money: "돈",
@@ -1468,7 +1494,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     plot: "밭",
     auto: "자동",
     awesome: "멋져요!",
-    dark_mode: "다크 모드"
+    dark_mode: "다크 모드",
+    light: "라이트",
+    dark: "다크"
   },
   ja: {
     money: "お金",
@@ -1571,7 +1599,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     plot: "畑",
     auto: "自動",
     awesome: "素晴らしい！",
-    dark_mode: "ダークモード"
+    dark_mode: "ダークモード",
+    light: "ライト",
+    dark: "ダーク"
   },
   'zh-CN': {
     money: "金钱",
@@ -1674,7 +1704,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     plot: "土地",
     auto: "自动",
     awesome: "棒极了！",
-    dark_mode: "深色模式"
+    dark_mode: "深色模式",
+    light: "浅色",
+    dark: "深色"
   },
   'zh-TW': {
     money: "金錢",
@@ -1777,7 +1809,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     plot: "土地",
     auto: "自動",
     awesome: "棒極了！",
-    dark_mode: "深色模式"
+    dark_mode: "深色模式",
+    light: "淺色",
+    dark: "深色"
   },
   id: {
     money: "Uang",
@@ -1880,7 +1914,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     plot: "Lahan",
     auto: "Oto",
     awesome: "Luar biasa!",
-    dark_mode: "Mode Gelap"
+    dark_mode: "Mode Gelap",
+    light: "Terang",
+    dark: "Gelap"
   },
   th: {
     money: "เงิน",
@@ -1983,7 +2019,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     plot: "แปลง",
     auto: "ออโต้",
     awesome: "สุดยอด!",
-    dark_mode: "โหมดมืด"
+    dark_mode: "โหมดมืด",
+    light: "สว่าง",
+    dark: "มืด"
   },
   vi: {
     money: "Tiền",
@@ -2086,7 +2124,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     plot: "Ô đất",
     auto: "Tự động",
     awesome: "Tuyệt vời!",
-    dark_mode: "Chế độ tối"
+    dark_mode: "Chế độ tối",
+    light: "Sáng",
+    dark: "Tối"
   },
   ber: {
     money: "Idrimn",
@@ -2191,7 +2231,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     plot: "Iger",
     auto: "Amgaz",
     awesome: "D icebḥan!",
-    dark_mode: "Asgganu"
+    dark_mode: "Asgganu",
+    light: "Tifawt",
+    dark: "Asgganu"
   }
 };
 
