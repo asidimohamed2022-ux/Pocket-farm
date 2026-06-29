@@ -95,4 +95,5 @@ export interface GameState {
   customMusicName?: string | null;
   customMusicData?: string | null; // Base64
   musicKey?: number;
+  darkMode?: boolean;
 }

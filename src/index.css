@@ -1,1 +1,185 @@
 @import "tailwindcss";
+
+/* Comprehensive Elegant Dark Mode Overrides */
+.dark {
+  background-color: #020617 !important; /* slate-950 */
+  color: #f1f5f9 !important; /* slate-100 */
+}
+
+/* Page background */
+.dark .bg-amber-50 {
+  background-color: #0f172a !important; /* slate-900 */
+}
+
+/* Modals, panels, bottom bar, header card */
+.dark .bg-white {
+  background-color: #1e293b !important; /* slate-800 */
+  color: #f1f5f9 !important;
+}
+
+/* Inner containers and secondary backgrounds */
+.dark .bg-slate-50 {
+  background-color: #0f172a !important; /* slate-900 */
+  color: #f1f5f9 !important;
+}
+.dark .bg-slate-100 {
+  background-color: #334155 !important; /* slate-700 */
+  color: #cbd5e1 !important;
+}
+
+/* Inputs, drop-downs and input ranges */
+.dark input[type="range"] {
+  background-color: #475569 !important; /* slate-600 */
+}
+.dark .bg-slate-100 input[type="range"] {
+  background-color: #1e293b !important;
+}
+
+/* Text color overrides */
+.dark .text-slate-800,
+.dark .text-slate-900,
+.dark .text-slate-700,
+.dark .text-slate-600,
+.dark h2.text-slate-800,
+.dark h3.text-slate-800,
+.dark h4.text-slate-800,
+.dark p.text-slate-800,
+.dark div.text-slate-800,
+.dark h4.text-slate-900,
+.dark p.text-slate-600 {
+  color: #f1f5f9 !important; /* slate-100 */
+}
+
+.dark .text-slate-500,
+.dark .text-slate-400 {
+  color: #94a3b8 !important; /* slate-400 */
+}
+
+/* Active tab text states */
+.dark .text-green-600 {
+  color: #34d399 !important; /* emerald-400 */
+}
+.dark .text-green-700 {
+  color: #34d399 !important;
+}
+.dark .text-amber-600 {
+  color: #fbbf24 !important; /* amber-400 */
+}
+.dark .text-purple-600 {
+  color: #c084fc !important; /* purple-400 */
+}
+.dark .text-blue-600 {
+  color: #60a5fa !important; /* blue-400 */
+}
+
+/* Borders */
+.dark .border-slate-50,
+.dark .border-slate-100,
+.dark .border-slate-200 {
+  border-color: #334155 !important; /* slate-700 */
+}
+
+/* Tabs and interactive lists */
+.dark button.bg-slate-50:hover,
+.dark button.bg-slate-100:hover,
+.dark .hover\:bg-slate-50:hover,
+.dark .hover\:bg-slate-100:hover {
+  background-color: #475569 !important; /* slate-600 */
+}
+
+/* Badges and notification bubbles */
+.dark .bg-amber-100 {
+  background-color: rgba(251, 191, 36, 0.15) !important;
+  border-color: rgba(251, 191, 36, 0.3) !important;
+}
+.dark .bg-amber-100 .text-amber-600 {
+  color: #fbbf24 !important;
+}
+
+.dark .bg-green-100 {
+  background-color: rgba(52, 211, 153, 0.15) !important;
+  border-color: rgba(52, 211, 153, 0.3) !important;
+}
+.dark .bg-green-100 .text-green-700,
+.dark .bg-green-100 .text-green-600 {
+  color: #34d399 !important;
+}
+
+.dark .bg-purple-100 {
+  background-color: rgba(192, 132, 252, 0.15) !important;
+  border-color: rgba(192, 132, 252, 0.3) !important;
+}
+.dark .bg-purple-100 .text-purple-600 {
+  color: #c084fc !important;
+}
+
+.dark .bg-blue-100 {
+  background-color: rgba(96, 165, 251, 0.15) !important;
+  border-color: rgba(96, 165, 251, 0.3) !important;
+}
+.dark .bg-blue-100 .text-blue-600 {
+  color: #60a5fa !important;
+}
+
+/* Danger Zone Reset Button */
+.dark .bg-red-50 {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+  color: #f87171 !important;
+}
+.dark .bg-red-50:hover {
+  background-color: rgba(239, 68, 68, 0.2) !important;
+}
+.dark .bg-red-100 {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  color: #f87171 !important;
+}
+
+/* Tab Active states where background is white */
+.dark .bg-white.text-green-600,
+.dark .bg-white.text-blue-600,
+.dark .bg-white.text-purple-600 {
+  background-color: #334155 !important; /* slate-700 */
+}
+
+/* Header customization */
+.dark header {
+  border-bottom: 1px solid #334155 !important;
+}
+
+/* Modal specific text readability improvements */
+.dark .text-amber-900,
+.dark .text-amber-800,
+.dark .text-amber-700 {
+  color: #fcd34d !important; /* amber-300 */
+}
+
+.dark .text-purple-900,
+.dark .text-purple-800,
+.dark .text-purple-700 {
+  color: #e9d5ff !important; /* purple-200 */
+}
+
+.dark .text-green-900,
+.dark .text-green-800 {
+  color: #a7f3d0 !important; /* emerald-200 */
+}
+
+/* Quick tool selection expander layout */
+.dark .shadow-2xl {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Hover & buttons general */
+.dark .hover\:text-slate-600:hover,
+.dark .hover\:text-slate-700:hover {
+  color: #e2e8f0 !important;
+}
+
+/* Custom scrollbar in dark mode */
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+  background: #0f172a !important;
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #475569 !important;
+}

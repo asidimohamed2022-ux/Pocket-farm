@@ -33,6 +33,8 @@ import {
   Settings,
   Languages,
   Wallet,
+  Moon,
+  Sun,
   Music,
   Volume2,
   Square,
@@ -41,7 +43,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CropType, ToolType, PlotState, GameState, Rarity, AnimalType, CageState, AnimalProductType, InfusionType } from './types';
-import { TRANSLATIONS, LANGUAGES, LanguageCode } from './translations';
+import { TRANSLATIONS, LANGUAGES, LanguageCode, GAME_ITEM_TRANSLATIONS } from './translations';
 import { 
   CROPS, 
   ANIMALS,
@@ -140,7 +142,8 @@ const INITIAL_STATE_BASE: Omit<GameState, 'lastSaved'> = {
   isMusicPlaying: false,
   customMusicName: null,
   customMusicData: null,
-  musicKey: 0
+  musicKey: 0,
+  darkMode: false
 };
 
 const formatNumberShort = (num: number) => {
@@ -359,12 +362,14 @@ const Plot = memo(({
   plot, 
   activeTool, 
   onInteract,
-  hasGrowthBoost
+  hasGrowthBoost,
+  unlockedPlots
 }: { 
   plot: PlotState; 
   activeTool: ToolType; 
   onInteract: (id: number) => void;
   hasGrowthBoost: boolean;
+  unlockedPlots: number;
 }) => {
   const [progress, setProgress] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -392,6 +397,37 @@ const Plot = memo(({
 
   const cropData = plot.crop ? CROPS[plot.crop] : null;
 
+  const cols = unlockedPlots <= 4 ? 2 : unlockedPlots <= 9 ? 3 : 4;
+  const iconSizeClass = cols === 2 ? "w-16 h-16" : cols === 3 ? "w-12 h-12" : "w-10 h-10";
+  const iconTextClass = cols === 2 ? "text-4xl" : cols === 3 ? "text-3xl" : "text-2xl";
+  const sproutSize = cols === 2 ? 32 : cols === 3 ? 24 : 20;
+
+  const infusionBadgeClass = cols === 2 
+    ? "bg-white/90 rounded-full p-0.5 shadow-sm border border-slate-200 flex items-center justify-center w-5 h-5" 
+    : cols === 3 
+    ? "bg-white/90 rounded-full p-0.5 shadow-sm border border-slate-200/80 flex items-center justify-center w-4 h-4" 
+    : "bg-white/90 rounded-full p-[1px] shadow-sm border border-slate-200/60 flex items-center justify-center w-3.5 h-3.5";
+
+  const tonicBadgeClass = cols === 2 
+    ? "bg-purple-100 rounded-full p-0.5 shadow-sm border border-purple-200 flex items-center justify-center w-5 h-5" 
+    : cols === 3 
+    ? "bg-purple-100 rounded-full p-0.5 shadow-sm border border-purple-200/80 flex items-center justify-center w-4 h-4" 
+    : "bg-purple-100 rounded-full p-[1px] shadow-sm border border-purple-200/60 flex items-center justify-center w-3.5 h-3.5";
+
+  const infusionTextClass = cols === 2 ? "text-[10px]" : cols === 3 ? "text-[9px]" : "text-[8px]";
+
+  const progressContainerClass = cols === 2 
+    ? "absolute bottom-1.5 left-1/2 -translate-x-1/2 w-14 h-1.5 bg-black/20 rounded-full overflow-hidden z-10" 
+    : cols === 3 
+    ? "absolute bottom-1.5 left-1/2 -translate-x-1/2 w-10 h-1.2 bg-black/20 rounded-full overflow-hidden z-10" 
+    : "absolute bottom-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-black/20 rounded-full overflow-hidden z-10";
+
+  const readyIndicatorClass = cols === 2 
+    ? "absolute top-1 left-1 bg-white rounded-full p-1 shadow-md z-10" 
+    : "absolute top-1 left-1 bg-white rounded-full p-0.5 shadow-md z-10";
+  
+  const readyCheckSize = cols === 2 ? 12 : cols === 3 ? 10 : 8;
+
   return (
     <motion.div 
       layout
@@ -401,42 +437,44 @@ const Plot = memo(({
     >
       {!plot.crop && (
         <div className="text-amber-900/20">
-          <Sprout size={32} />
+          <Sprout size={sproutSize} />
         </div>
       )}
 
       {plot.crop && (
-        <div className="relative flex flex-col items-center">
-          <RarityEffect rarity={cropData?.rarity || 'NR'}>
-            <motion.span 
-              key="crop-icon"
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ 
-                scale: plot.isReady ? 1.2 : 0.5 + (progress / 200),
-                opacity: 1 
-              }}
-              className="filter drop-shadow-md block p-2"
-            >
-              <IconRenderer 
-                icon={cropData?.icon || '🌱'} 
-                className="w-full h-full text-4xl" 
-                containerClassName="w-16 h-16" 
-              />
-            </motion.span>
-          </RarityEffect>
+        <>
+          <div className="relative flex flex-col items-center">
+            <RarityEffect rarity={cropData?.rarity || 'NR'}>
+              <motion.span 
+                key="crop-icon"
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ 
+                  scale: plot.isReady ? 1.2 : 0.5 + (progress / 200),
+                  opacity: 1 
+                }}
+                className="filter drop-shadow-md block p-2"
+              >
+                <IconRenderer 
+                  icon={cropData?.icon || '🌱'} 
+                  className={`w-full h-full ${iconTextClass}`} 
+                  containerClassName={iconSizeClass} 
+                />
+              </motion.span>
+            </RarityEffect>
+          </div>
           
           {/* Infusion Icons */}
           {(plot.infusions && plot.infusions.length > 0 || plot.tonicApplied) && (
-            <div className="absolute -top-2 -right-2 flex flex-col gap-0.5">
+            <div className="absolute top-1 right-1 flex flex-col gap-0.5 z-10">
               {plot.tonicApplied && (
                 <motion.div
                   key="tonic-indicator"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="bg-purple-100 rounded-full p-0.5 shadow-sm border border-purple-200 flex items-center justify-center"
+                  className={tonicBadgeClass}
                   title="Tonic Applied"
                 >
-                  <span className="text-[10px]">🧪</span>
+                  <span className={infusionTextClass}>🧪</span>
                 </motion.div>
               )}
               {plot.infusions && plot.infusions.map((inf, i) => (
@@ -444,17 +482,17 @@ const Plot = memo(({
                   key={`infusion-${i}`}
                   initial={{ scale: 0, rotate: -45 }}
                   animate={{ scale: 1, rotate: 0 }}
-                  className="bg-white/90 rounded-full p-0.5 shadow-sm border border-slate-200 flex items-center justify-center"
+                  className={infusionBadgeClass}
                   title={inf}
                 >
-                  <span className="text-[10px]">{INFUSIONS[inf]?.icon || '✨'}</span>
+                  <span className={infusionTextClass}>{INFUSIONS[inf]?.icon || '✨'}</span>
                 </motion.div>
               ))}
             </div>
           )}
           
           {!plot.isReady && (
-            <div className="absolute -bottom-4 w-12 h-1.5 bg-black/20 rounded-full overflow-hidden">
+            <div className={progressContainerClass}>
               <div 
                 className="h-full bg-green-500 transition-all duration-100" 
                 style={{ width: `${progress}%` }} 
@@ -465,14 +503,14 @@ const Plot = memo(({
           {plot.isReady && (
             <motion.div 
               key="ready-indicator"
-              animate={{ y: [0, -5, 0] }}
+              animate={{ y: [0, -3, 0] }}
               transition={{ repeat: Infinity, duration: 1.5 }}
-              className="absolute -top-6 bg-white rounded-full p-1 shadow-lg z-10"
+              className={readyIndicatorClass}
             >
-              <Check size={12} className="text-green-600" />
+              <Check size={readyCheckSize} className="text-green-600" />
             </motion.div>
           )}
-        </div>
+        </>
       )}
     </motion.div>
   );
@@ -584,7 +622,18 @@ export default function App() {
   const [showFullMoney, setShowFullMoney] = useState(false);
 
   const t = (key: string) => {
-    return TRANSLATIONS[gameState.language]?.[key] || TRANSLATIONS['en'][key] || key;
+    if (key) {
+      const religiousTerms = ['god', 'heaven', 'angelic', 'demonic', 'divine'];
+      const keyLower = key.toLowerCase();
+      if (religiousTerms.some(term => keyLower.includes(term))) {
+        return key;
+      }
+    }
+    return TRANSLATIONS[gameState.language]?.[key] || 
+           GAME_ITEM_TRANSLATIONS[gameState.language]?.[key] || 
+           TRANSLATIONS['en'][key] || 
+           GAME_ITEM_TRANSLATIONS['en'][key] || 
+           key;
   };
 
   const handleReset = () => {
@@ -649,6 +698,7 @@ export default function App() {
         if (parsed.isMusicPlaying === undefined) parsed.isMusicPlaying = false;
         if (parsed.customMusicName === undefined) parsed.customMusicName = null;
         if (parsed.customMusicData === undefined) parsed.customMusicData = null;
+        if (parsed.darkMode === undefined) parsed.darkMode = false;
 
         // Migrate legacy crop names in seedInventory
         const migratedSeedInventory: Partial<Record<CropType, number>> = {};
@@ -795,7 +845,7 @@ export default function App() {
     if (notificationsEnabled && document.visibilityState === 'hidden') {
       const cropData = CROPS[cropType];
       new Notification("Pocket Farm", {
-        body: `Your ${cropData.displayName} is ready to harvest!`,
+        body: `Your ${t(cropData.displayName)} is ready to harvest!`,
         icon: "/favicon.ico",
         tag: `crop-ready-${cropType}`
       });
@@ -1372,7 +1422,7 @@ export default function App() {
   // --- Render Helpers ---
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-green-100 selection:text-green-700">
+    <div className={`min-h-screen ${gameState.darkMode ? 'dark bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'} font-sans selection:bg-green-100 selection:text-green-700`}>
       <MusicManager 
         musicVolume={gameState.musicVolume || 0.5} 
         isMusicPlaying={gameState.isMusicPlaying || false} 
@@ -1512,6 +1562,7 @@ export default function App() {
                 activeTool={gameState.activeTool} 
                 onInteract={handlePlotInteract}
                 hasGrowthBoost={gameState.hasGrowthBoost}
+                unlockedPlots={gameState.unlockedPlots}
               />
             </motion.div>
           ))}
@@ -1583,7 +1634,7 @@ export default function App() {
                 </div>
               </button>
               <div className="mt-2 bg-white px-2 py-0.5 rounded-full shadow-sm border border-slate-50 flex items-center gap-1">
-                <span className="text-[10px] font-black text-green-700 uppercase tracking-widest">{gameState.activeTool}</span>
+                <span className="text-[10px] font-black text-green-700 uppercase tracking-widest">{t(gameState.activeTool)}</span>
                 {gameState.activeTool === 'Tonic' && gameState.selectedTonic && (
                   <span className="text-[10px] font-bold text-purple-600 border-l border-slate-200 pl-1">
                     {TONICS?.[gameState.selectedTonic]?.icon || '🧪'}
@@ -1654,8 +1705,8 @@ export default function App() {
                           </div>
                         </div>
                         <div className="text-left">
-                          <p className="font-bold text-slate-800">{tonic.displayName}</p>
-                          <p className="text-xs text-slate-500">{count} in stock</p>
+                          <p className="font-bold text-slate-800">{t(tonic.displayName)}</p>
+                          <p className="text-xs text-slate-500">{t('in_stock')}: {count}</p>
                         </div>
                       </div>
                       <Check className="text-purple-600" size={20} />
@@ -1664,7 +1715,7 @@ export default function App() {
                 })}
                 {(!gameState.tonicInventory || Object.values(gameState.tonicInventory).every(v => v === 0)) && (
                   <div className="py-8 text-center">
-                    <p className="text-slate-400 font-medium mb-4">No tonics in stock!</p>
+                    <p className="text-slate-400 font-medium mb-4">{t('empty_inventory_msg')}</p>
                     <button 
                       onClick={() => {
                         setShowTonicSelector(null);
@@ -1673,7 +1724,7 @@ export default function App() {
                       }}
                       className="bg-purple-600 text-white px-6 py-2 rounded-xl font-bold shadow-md"
                     >
-                      Visit Shop
+                      {t('shop')}
                     </button>
                   </div>
                 )}
@@ -1733,7 +1784,7 @@ export default function App() {
                               crop.rarity === 'Celestial' ? 'text-sky-800' : 
                               'text-slate-800'
                             }`}>
-                              {crop.displayName}
+                              {t(crop.displayName)}
                             </p>
                           </div>
                           <p className={`text-xs ${
@@ -1830,7 +1881,7 @@ export default function App() {
                         className="flex flex-col items-center justify-center p-3 bg-amber-50 rounded-2xl border border-amber-100 disabled:opacity-50"
                       >
                         <Sprout size={20} className="text-amber-600 mb-1" />
-                        <span className="text-[10px] font-black text-amber-800 uppercase">Plot</span>
+                        <span className="text-[10px] font-black text-amber-800 uppercase">{t('plot')}</span>
                         <span className="text-[9px] font-bold text-amber-600">£{formatNumberShort(PLOT_COST)}</span>
                       </button>
 
@@ -1840,9 +1891,9 @@ export default function App() {
                         className="flex flex-col items-center justify-center p-3 bg-purple-50 rounded-2xl border border-purple-100 disabled:opacity-50"
                       >
                         <PawPrint size={20} className="text-purple-600 mb-1" />
-                        <span className="text-[10px] font-black text-purple-800 uppercase">Animals</span>
+                        <span className="text-[10px] font-black text-purple-800 uppercase">{t('animals')}</span>
                         <span className="text-[9px] font-bold text-purple-600">
-                          {gameState.animalAreaUnlocked ? 'Owned' : `£${ANIMAL_AREA_COST}`}
+                          {gameState.animalAreaUnlocked ? t('owned') : `£${ANIMAL_AREA_COST}`}
                         </span>
                       </button>
 
@@ -1854,10 +1905,10 @@ export default function App() {
                       >
                         <Zap size={20} className={gameState.permanentAutoHarvest ? 'text-green-600 mb-1' : 'text-blue-600 mb-1'} />
                         <span className={`text-[10px] font-black uppercase ${gameState.permanentAutoHarvest ? 'text-green-800' : 'text-blue-800'}`}>
-                          Auto
+                          {t('auto')}
                         </span>
                         <span className={`text-[9px] font-bold ${gameState.permanentAutoHarvest ? 'text-green-600' : 'text-blue-600'}`}>
-                          {gameState.permanentAutoHarvest ? 'Active' : 'Boost'}
+                          {gameState.permanentAutoHarvest ? t('active') : t('boost')}
                         </span>
                       </button>
                     </div>
@@ -1895,7 +1946,7 @@ export default function App() {
                                       crop.rarity === 'Celestial' ? 'text-sky-800' : 
                                       'text-slate-800'
                                     }`}>
-                                      {crop.displayName}
+                                      {t(crop.displayName)}
                                     </p>
                                     <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-tighter ${
                                       crop.rarity === 'Celestial' ? 'bg-sky-200 text-sky-800' :
@@ -1912,7 +1963,7 @@ export default function App() {
                                     crop.rarity === 'Celestial' ? 'text-sky-600' : 
                                     'text-slate-500'
                                   }`}>
-                                    In stock: {formatNumberShort(gameState.seedInventory[type] || 0)}
+                                    {t('in_stock')}: {formatNumberShort(gameState.seedInventory[type] || 0)}
                                   </p>
                                 </div>
                               </div>
@@ -1958,7 +2009,7 @@ export default function App() {
                                 </div>
                               </div>
                               <div>
-                                <p className="font-bold text-lg text-slate-800">{tonic.displayName}</p>
+                                <p className="font-bold text-lg text-slate-800">{t(tonic.displayName)}</p>
                                 <div className="flex items-center gap-2">
                                   <span className={`text-[10px] font-black uppercase tracking-widest ${infusion?.color || 'text-slate-500'}`}>
                                     {type === 'Random' ? 'Random Infusion' : `${type} (x${infusion?.multiplier || 1})`}
@@ -2037,7 +2088,7 @@ export default function App() {
                 onClick={() => setShowAutoHarvestInfo(false)}
                 className="mt-4 text-slate-400 font-bold text-sm"
               >
-                Close
+                {t('cancel')}
               </button>
             </motion.div>
           </motion.div>
@@ -2061,7 +2112,7 @@ export default function App() {
               onClick={e => e.stopPropagation()}
             >
               <div className="flex justify-between items-center mb-6">
-                <h4 className="text-2xl font-black text-slate-800">Premium Pack</h4>
+                <h4 className="text-2xl font-black text-slate-800">{t('premium_pack')}</h4>
                 <button onClick={() => setShowPremiumPackInfo(false)} className="p-2 bg-slate-100 rounded-full"><X size={20}/></button>
               </div>
 
@@ -2070,7 +2121,7 @@ export default function App() {
                   <Star size={80} />
                 </div>
                 <div className="relative z-10">
-                  <h5 className="text-xl font-black mb-2">Premium Farm Pack</h5>
+                  <h5 className="text-xl font-black mb-2">{t('premium_pack')}</h5>
                   <ul className="text-xs space-y-2 mb-6 opacity-90 font-bold">
                     <li className="flex items-center gap-2"><span>✨</span> {t('auto_harvest')}</li>
                     <li className="flex items-center gap-2"><span>🐾</span> {t('animal_place')}</li>
@@ -2092,7 +2143,7 @@ export default function App() {
                       }}
                       className="w-full py-3 bg-white text-orange-600 rounded-2xl font-black shadow-lg hover:scale-105 transition-transform flex items-center justify-center gap-2"
                     >
-                      {t('buy')} for {formatCurrency(PREMIUM_PACK_PRICE)}
+                      {t('buy')} ({formatCurrency(PREMIUM_PACK_PRICE)})
                     </button>
                   )}
                 </div>
@@ -2240,7 +2291,7 @@ export default function App() {
                               crop.rarity === 'Celestial' ? 'text-sky-800' : 
                               'text-slate-800'
                             }`}>
-                              {crop.displayName}
+                              {t(crop.displayName)}
                             </p>
                             {isFavorite && <Star size={14} className="text-amber-400 fill-current" />}
                             {infusions.length > 0 && (
@@ -2264,7 +2315,7 @@ export default function App() {
                             crop.rarity === 'Celestial' ? 'text-sky-600' : 
                             'text-slate-500'
                           }`}>
-                            Stock: {formatNumberShort(count)}
+                            {t('in_stock')}: {formatNumberShort(count)}
                           </p>
                         </div>
                       </div>
@@ -2301,8 +2352,8 @@ export default function App() {
                           <span className="text-4xl">{product.icon}</span>
                         </div>
                         <div>
-                          <p className="font-bold text-lg">{product.type}</p>
-                          <p className="text-sm text-slate-500">Stock: {formatNumberShort(count)}</p>
+                          <p className="font-bold text-lg">{t(product.type)}</p>
+                          <p className="text-sm text-slate-500">{t('in_stock')}: {formatNumberShort(count)}</p>
                         </div>
                       </div>
                       <button 
@@ -2339,12 +2390,12 @@ export default function App() {
                           </div>
                         </div>
                         <div>
-                          <p className="font-bold text-lg text-slate-800">{tonic.displayName}</p>
+                          <p className="font-bold text-lg text-slate-800">{t(tonic.displayName)}</p>
                           <div className="flex items-center gap-2">
                             <span className={`text-[10px] font-black uppercase tracking-widest ${infusion?.color || 'text-slate-500'}`}>
                               {type === 'Random' ? 'Random Infusion' : `${type} (x${infusion?.multiplier || 1})`}
                             </span>
-                            <span className="text-[10px] text-slate-400 font-bold">Stock: {count}</span>
+                            <span className="text-[10px] text-slate-400 font-bold">{t('in_stock')}: {count}</span>
                           </div>
                         </div>
                       </div>
@@ -2448,7 +2499,7 @@ export default function App() {
               <div className="flex justify-between items-center mb-6 shrink-0">
                 <div className="flex items-center gap-2">
                   <PawPrint className="text-purple-600" size={24} />
-                  <h3 className="text-2xl font-black text-slate-800">Animal Place</h3>
+                  <h3 className="text-2xl font-black text-slate-800">{t('animal_place_title')}</h3>
                 </div>
                 <button onClick={() => setShowAnimalScreen(false)} className="p-2 bg-white rounded-full shadow-sm"><X size={20}/></button>
               </div>
@@ -2460,7 +2511,7 @@ export default function App() {
                   className="w-full p-4 bg-purple-600 text-white rounded-2xl font-black flex items-center justify-center gap-2 shadow-lg hover:bg-purple-700 transition-colors"
                 >
                   <ShoppingBasket size={20} />
-                  <span>Animal Shop</span>
+                  <span>{t('animal_shop')}</span>
                 </button>
 
                 {/* Cages Grid */}
@@ -2482,12 +2533,12 @@ export default function App() {
                               <span key={`cage-animal-${cage.id}-${i}`} className="text-4xl">{ANIMALS[cage.type!].icon}</span>
                             ))}
                           </div>
-                          <span className="text-xs font-bold text-slate-400 mt-2 uppercase tracking-widest">{cage.type}</span>
+                          <span className="text-xs font-bold text-slate-400 mt-2 uppercase tracking-widest">{t(cage.type)}</span>
                         </div>
                       ) : (
                         <div className="flex flex-col items-center text-slate-300">
                           <Home size={32} />
-                          <span className="text-[10px] font-bold mt-1 uppercase tracking-widest">Empty Cage</span>
+                          <span className="text-[10px] font-bold mt-1 uppercase tracking-widest">{t('empty_cage')}</span>
                         </div>
                       )}
 
@@ -2509,7 +2560,7 @@ export default function App() {
                       className="aspect-square bg-slate-100 rounded-3xl border-4 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-400 hover:border-slate-400 transition-all disabled:opacity-50"
                     >
                       <Plus size={32} />
-                      <span className="text-[10px] font-black mt-1 uppercase tracking-widest">New Cage</span>
+                      <span className="text-[10px] font-black mt-1 uppercase tracking-widest">{t('new_cage')}</span>
                       <span className="text-xs font-bold mt-1">£{formatNumberShort(CAGE_COST)}</span>
                     </button>
                   )}
@@ -2536,7 +2587,7 @@ export default function App() {
               onClick={e => e.stopPropagation()}
             >
               <div className="flex justify-between items-center mb-6 shrink-0">
-                <h3 className="text-xl font-black text-slate-800">Animal Shop</h3>
+                <h3 className="text-xl font-black text-slate-800">{t('animal_shop')}</h3>
                 <button onClick={() => setShowAnimalShop(false)} className="p-2 bg-slate-100 rounded-full"><X size={16}/></button>
               </div>
 
@@ -2548,8 +2599,8 @@ export default function App() {
                       <div className="flex items-center gap-3">
                         <span className="text-3xl">{animal.icon}</span>
                         <div>
-                          <p className="font-bold text-slate-800">{type}</p>
-                          <p className="text-[10px] text-slate-500">Owned: {formatNumberShort(gameState.animalInventory[type] || 0)}</p>
+                          <p className="font-bold text-slate-800">{t(type)}</p>
+                          <p className="text-[10px] text-slate-500">{t('owned')}: {formatNumberShort(gameState.animalInventory[type] || 0)}</p>
                         </div>
                       </div>
                       <button 
@@ -2607,7 +2658,7 @@ export default function App() {
                       <div className="flex items-center gap-3">
                         <span className="text-3xl">{animal.icon}</span>
                         <div className="text-left">
-                          <p className="font-bold text-slate-800">{type}</p>
+                          <p className="font-bold text-slate-800">{t(type)}</p>
                           <p className="text-xs text-slate-500">{formatNumberShort(count)} {t('owned')}</p>
                         </div>
                       </div>
@@ -2672,7 +2723,7 @@ export default function App() {
                   className="w-full py-4 bg-slate-100 text-slate-600 rounded-2xl font-black flex items-center justify-center gap-3 hover:bg-slate-200 transition-all"
                 >
                   <HelpCircle size={20} />
-                  <span>Help</span>
+                  <span>{t('how_to_play')}</span>
                 </button>
               </div>
             </motion.div>
@@ -2747,8 +2798,8 @@ export default function App() {
                         <Hand size={24} />
                       </div>
                       <div>
-                        <h5 className="font-black text-slate-800 uppercase text-xs tracking-widest mb-1">Planting</h5>
-                        <p className="text-sm text-slate-500 leading-relaxed">Select the <span className="font-bold text-green-600">Hand</span> tool and tap an empty plot to plant seeds from your inventory.</p>
+                        <h5 className="font-black text-slate-800 uppercase text-xs tracking-widest mb-1">{t('planting')}</h5>
+                        <p className="text-sm text-slate-500 leading-relaxed">{t('planting_desc')}</p>
                       </div>
                     </div>
 
@@ -2757,8 +2808,8 @@ export default function App() {
                         <Sprout size={24} />
                       </div>
                       <div>
-                        <h5 className="font-black text-slate-800 uppercase text-xs tracking-widest mb-1">Harvesting</h5>
-                        <p className="text-sm text-slate-500 leading-relaxed">Use the <span className="font-bold text-amber-600 text-lg leading-none">✂️</span> (Sickle) tool to harvest fully grown crops. They go straight to your inventory!</p>
+                        <h5 className="font-black text-slate-800 uppercase text-xs tracking-widest mb-1">{t('harvesting')}</h5>
+                        <p className="text-sm text-slate-500 leading-relaxed">{t('harvesting_desc')}</p>
                       </div>
                     </div>
 
@@ -2767,8 +2818,8 @@ export default function App() {
                         <Trash2 size={24} />
                       </div>
                       <div>
-                        <h5 className="font-black text-slate-800 uppercase text-xs tracking-widest mb-1">Shovel</h5>
-                        <p className="text-sm text-slate-500 leading-relaxed">Use the <span className="font-bold text-red-600">Shovel</span> tool to remove any crop from a plot, even if it's not ready yet.</p>
+                        <h5 className="font-black text-slate-800 uppercase text-xs tracking-widest mb-1">{t('shovel')}</h5>
+                        <p className="text-sm text-slate-500 leading-relaxed">{t('shovel_desc')}</p>
                       </div>
                     </div>
 
@@ -2777,8 +2828,8 @@ export default function App() {
                         <ShoppingBasket size={24} />
                       </div>
                       <div>
-                        <h5 className="font-black text-slate-800 uppercase text-xs tracking-widest mb-1">Shop</h5>
-                        <p className="text-sm text-slate-500 leading-relaxed">Buy new seeds, expand your farm, and unlock animals in the shop. Rarer seeds cost more but sell for a fortune!</p>
+                        <h5 className="font-black text-slate-800 uppercase text-xs tracking-widest mb-1">{t('shop')}</h5>
+                        <p className="text-sm text-slate-500 leading-relaxed">{t('shop_desc')}</p>
                       </div>
                     </div>
 
@@ -2787,12 +2838,8 @@ export default function App() {
                         <FlaskConical size={24} />
                       </div>
                       <div>
-                        <h5 className="font-black text-slate-800 uppercase text-xs tracking-widest mb-1">Tonic Tool</h5>
-                        <p className="text-sm text-slate-500 leading-relaxed">
-                          Select the <span className="font-bold text-purple-600">Tonic</span> tool to apply boosters to growing crops. 
-                          Selecting the tool opens your <span className="font-bold text-purple-600">Tonic Inventory</span>. 
-                          Apply them to <span className="font-black underline">growing crops only</span> to add powerful infusions!
-                        </p>
+                        <h5 className="font-black text-slate-800 uppercase text-xs tracking-widest mb-1">{t('Tonic')}</h5>
+                        <p className="text-sm text-slate-500 leading-relaxed">{t('tonic_desc')}</p>
                       </div>
                     </div>
 
@@ -2801,11 +2848,8 @@ export default function App() {
                         <Star size={24} />
                       </div>
                       <div>
-                        <h5 className="font-black text-slate-800 uppercase text-xs tracking-widest mb-1">Obtaining Tonics</h5>
-                        <p className="text-sm text-slate-500 leading-relaxed">
-                          Buy tonics in the <span className="font-bold text-blue-600">Shop</span>, win them from <span className="font-bold text-amber-500">Roy's Spin</span>, or earn them as special rewards. 
-                          The <span className="font-black">Random Tonic</span> gives a random infusion from the list!
-                        </p>
+                        <h5 className="font-black text-slate-800 uppercase text-xs tracking-widest mb-1">{t('obtaining_tonics')}</h5>
+                        <p className="text-sm text-slate-500 leading-relaxed">{t('obtaining_tonics_desc')}</p>
                       </div>
                     </div>
 
@@ -2814,13 +2858,13 @@ export default function App() {
                         <PawPrint size={24} />
                       </div>
                       <div>
-                        <h5 className="font-black text-slate-800 uppercase text-xs tracking-widest mb-1">Animals</h5>
-                        <p className="text-sm text-slate-500 leading-relaxed">Unlock the Animal Place to raise cows, sheep, and more. They produce valuable items over time.</p>
+                        <h5 className="font-black text-slate-800 uppercase text-xs tracking-widest mb-1">{t('animals')}</h5>
+                        <p className="text-sm text-slate-500 leading-relaxed">{t('animal_desc')}</p>
                       </div>
                     </div>
 
                     <div className="pt-4 border-t border-slate-100">
-                      <h5 className="font-black text-slate-800 uppercase text-xs tracking-widest mb-4">Connect with Us</h5>
+                      <h5 className="font-black text-slate-800 uppercase text-xs tracking-widest mb-4">{t('connect')}</h5>
                       <div className="grid grid-cols-2 gap-3">
                         <a 
                           href="https://discord.gg/dRFcH6eSAy" 
@@ -2833,7 +2877,7 @@ export default function App() {
                           </div>
                           <div>
                             <p className="text-[10px] font-black text-indigo-600 uppercase tracking-wider">Discord</p>
-                            <p className="text-[8px] text-indigo-400 font-bold">Join Server</p>
+                            <p className="text-[8px] text-indigo-400 font-bold">{t('join_server')}</p>
                           </div>
                         </a>
                         <a 
@@ -2847,7 +2891,7 @@ export default function App() {
                           </div>
                           <div>
                             <p className="text-[10px] font-black text-pink-600 uppercase tracking-wider">Instagram</p>
-                            <p className="text-[8px] text-pink-400 font-bold">Follow Us</p>
+                            <p className="text-[8px] text-pink-400 font-bold">{t('follow_us')}</p>
                           </div>
                         </a>
                       </div>
@@ -2869,7 +2913,7 @@ export default function App() {
                               containerClassName="w-10 h-10"
                             />
                             <div>
-                              <p className="font-bold text-slate-800 text-sm">{crop.displayName}</p>
+                              <p className="font-bold text-slate-800 text-sm">{t(crop.displayName)}</p>
                               <p className={`text-[10px] font-bold uppercase tracking-widest ${
                                 crop.rarity === 'Celestial' ? 'text-sky-500' :
                                 crop.rarity === 'Divine' ? 'text-amber-500' :
@@ -2884,10 +2928,10 @@ export default function App() {
                           </div>
                           <div className="text-right">
                             <div className="flex items-center gap-2 justify-end">
-                              <span className="text-[10px] font-bold text-slate-400">Buy: £{formatNumberShort(crop.buyPrice)}</span>
-                              <span className="text-[10px] font-bold text-green-600">Sell: £{formatNumberShort(crop.sellPrice)}</span>
+                              <span className="text-[10px] font-bold text-slate-400">{t('buy')}: £{formatNumberShort(crop.buyPrice)}</span>
+                              <span className="text-[10px] font-bold text-green-600">{t('sell')}: £{formatNumberShort(crop.sellPrice)}</span>
                             </div>
-                            <p className="text-[10px] font-bold text-blue-500">Time: {formatTimeShort(crop.growTime)}</p>
+                            <p className="text-[10px] font-bold text-blue-500">{t('grow_time')}: {formatTimeShort(crop.growTime)}</p>
                           </div>
                         </div>
                       );
@@ -2899,7 +2943,7 @@ export default function App() {
                   <div className="space-y-3">
                     <div className="p-3 bg-amber-50 rounded-2xl border border-amber-100 mb-4">
                       <p className="text-[10px] font-bold text-amber-700 leading-relaxed">
-                        ✨ Infusions are rare boosts that can appear on your crops <span className="font-black underline">only while they are growing</span>.
+                        ✨ {t('apply_to_growing')}
                       </p>
                     </div>
                     {(INFUSIONS ? Object.entries(INFUSIONS) : []).map(([name, data]) => (
@@ -2909,8 +2953,8 @@ export default function App() {
                             <span className="text-xl">{data?.icon || '✨'}</span>
                           </div>
                           <div>
-                            <p className={`font-bold text-sm ${data?.color || 'text-slate-500'}`}>{name}</p>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Multiplier</p>
+                            <p className={`font-bold text-sm ${data?.color || 'text-slate-500'}`}>{t(`${name} Tonic` as any)}</p>
+                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{t('boost')}</p>
                           </div>
                         </div>
                         <div className="text-right">
@@ -2929,7 +2973,7 @@ export default function App() {
                 }}
                 className="w-full mt-8 py-4 bg-green-600 text-white rounded-2xl font-black shadow-lg shadow-green-100 hover:bg-green-700 transition-all shrink-0"
               >
-                Got it!
+                {t('got_it')}
               </button>
             </motion.div>
           </motion.div>
@@ -2976,7 +3020,7 @@ export default function App() {
               </div>
               
               <div className="mb-8">
-                <p className="text-2xl font-black text-slate-800 mb-1">{CROPS[spinResult].displayName} {t('seed')}</p>
+                <p className="text-2xl font-black text-slate-800 mb-1">{t(CROPS[spinResult].displayName)} {t('seed')}</p>
                 <div className="inline-block px-4 py-1 bg-slate-100 rounded-full">
                   <span className={`text-xs font-black uppercase tracking-widest ${
                     CROPS[spinResult].rarity === 'Celestial' ? 'text-sky-600' :
@@ -2992,7 +3036,7 @@ export default function App() {
                 onClick={() => setSpinResult(null)}
                 className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black shadow-xl hover:bg-slate-800 transition-all"
               >
-                Awesome!
+                {t('awesome')}
               </button>
             </motion.div>
           </motion.div>
@@ -3080,6 +3124,38 @@ export default function App() {
                         {LANGUAGES[code]}
                       </button>
                     ))}
+                  </div>
+                </div>
+
+                {/* Theme / Appearance Section */}
+                <div className="pt-6 border-t border-slate-100 dark-mode-border">
+                  <h5 className="font-black text-slate-400 uppercase text-[10px] tracking-widest mb-4 flex items-center gap-2">
+                    <Sun size={14} className="dark-mode-icon" />
+                    {t('dark_mode')}
+                  </h5>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => setGameState(prev => ({ ...prev, darkMode: false }))}
+                      className={`py-3 px-4 rounded-2xl text-xs font-bold border-2 transition-all flex items-center justify-center gap-2 ${
+                        !gameState.darkMode 
+                          ? 'bg-green-600 border-green-600 text-white shadow-md' 
+                          : 'bg-slate-50 border-slate-100 text-slate-600 hover:border-slate-200'
+                      }`}
+                    >
+                      <Sun size={14} />
+                      Light
+                    </button>
+                    <button
+                      onClick={() => setGameState(prev => ({ ...prev, darkMode: true }))}
+                      className={`py-3 px-4 rounded-2xl text-xs font-bold border-2 transition-all flex items-center justify-center gap-2 ${
+                        gameState.darkMode 
+                          ? 'bg-slate-700 border-slate-700 text-white shadow-md' 
+                          : 'bg-slate-50 border-slate-100 text-slate-600 hover:border-slate-200'
+                      }`}
+                    >
+                      <Moon size={14} />
+                      Dark
+                    </button>
                   </div>
                 </div>
 
